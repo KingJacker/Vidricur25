@@ -8,15 +8,15 @@ from queue import Queue
 
 from car.car import Car
 
-#pigpio.exceptions = True
+pigpio.exceptions = True
 # Connects to the pigpio service of the Raspberry Pi
 # Allows to control the GPIO PINs of the Raspberry Pi
 # Documentation: https://abyz.me.uk/rpi/pigpio/python.html
-#pi = pigpio.pi()
+pi = pigpio.pi()
 
 ### Only for Demonstration: Virtual Raspberry Pi Board
-from stubs.pi import Pi
-pi = Pi()
+#from stubs.pi import Pi
+#pi = Pi()
 ###
 
 sio = socketio.AsyncServer()
@@ -41,4 +41,4 @@ def disconnect(sid):
     print('Remote disconnected with connection id: ', sid)
 
 if __name__ == '__main__':
-    web.run_app(app, host="127.0.0.1", port=8080)
+    web.run_app(app, host="0.0.0.0", port=8080)
