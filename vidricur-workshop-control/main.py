@@ -1,30 +1,26 @@
 import asyncio
 import socketio
 import json
-import pigpio
+# import gpiod
+from rpi_hardware_pwm import HardwarePWM
 
 from aiohttp import web
 from queue import Queue
 
 from car.car import Car
 
-pigpio.exceptions = True
-# Connects to the pigpio service of the Raspberry Pi
-# Allows to control the GPIO PINs of the Raspberry Pi
-# Documentation: https://abyz.me.uk/rpi/pigpio/python.html
-pi = pigpio.pi()
-
-### Only for Demonstration: Virtual Raspberry Pi Board
-#from stubs.pi import Pi
-#pi = Pi()
-###
+# On the Pi 5, use channels 0 and 1 to control GPIO_12 and GPIO13, respectively; 
+# use channels 2 and 3 to control GPIO_18 and GPIO_19, respectively
+# For Rpi 5, use chip=2
+steering_pwm = HardwarePWM(pwm_channel=0, hz=100, chip=2)
+esc_pwm = HardwarePWM(pwm_channel=1, hz=100, chip=2)
 
 sio = socketio.AsyncServer()
 app = web.Application()
 sio.attach(app)
 
 # Initialize car instance
-car = Car(sio, pi)
+car = Car(sio, steering_pwm, esc_pwm)
 asyncio.run(car.start())
 
 # If socketio connection is established the connect function is called
@@ -34,6 +30,7 @@ def connect(sid, environ):
 
 @sio.event
 async def message(sid, data):
+    print(f"Received: {data}")
     await car.handleEvent(json.loads(data))
 
 @sio.event
