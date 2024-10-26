@@ -24,14 +24,15 @@ class Car(metaclass=Singleton):
     wheel = None
     current_angle = 0
 
-    def __init__(self, sio, pi):
-        self.pi = pi
+    def __init__(self, sio, steering_pwm, esc_pwm):
+        self.steering_pwm = steering_pwm
+        self.esc_pwm = esc_pwm
         self.sio = sio
         
         # Creates an engine instance with the GPIO pi instance reference
-        self.engine = Engine(pi)
+        self.engine = Engine(self.esc_pwm)
         # Creates a wheel instance with the GPIO instance pi reference
-        self.wheel = Wheel(pi)
+        self.wheel = Wheel(self.steering_pwm)
 
     async def start(self):
         ## Initial configuration    
@@ -39,6 +40,8 @@ class Car(metaclass=Singleton):
         await self.wheel.set_angle(90)
         # Engine halt
         await self.engine.setSpeed(0)
+
+        print("SETTING START VALUES")
 
     async def send_message(self, message):
         await self.sio.emit("message", json.dumps(message))

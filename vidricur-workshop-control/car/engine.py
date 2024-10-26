@@ -1,44 +1,29 @@
 import math
 
-# This is an engine control for the Brushless System Combo: https://shop.robitronic.com/de/hobbywing-xerun-justock-combo-g3-hw38020321
-# The controlling instance is based on https://gitlab.fhnw.ch/makerstudio/sw-vidricur
 
-# Connect the ESC to the GPIO PIN 4
-ESC = 4
 
-# Maximum pluse width
-# This value depends on the drive you use: https://gitlab.fhnw.ch/makerstudio/sw-vidricur
-# More about: https://abyz.me.uk/rpi/pigpio/python.html#set_servo_pulsewidth
-MAX = 1900
+### FREQ: 100hz
 
-# Minimum pulse width
-# This value depends on the drive you use: https://gitlab.fhnw.ch/makerstudio/sw-vidricur
-# More about: https://abyz.me.uk/rpi/pigpio/python.html#set_servo_pulsewidth
-MIN = 1200 
-#MIN = 1220  # change this if your ESC's min value is different or leave it be
+# Duty Cycles
+MAX = 19
+MIN = 12
+HALT = 15
 
-# Neural pulse width -> Stops the engine
-# This value depends on the drive you use: https://gitlab.fhnw.ch/makerstudio/sw-vidricur
-# More about: https://abyz.me.uk/rpi/pigpio/python.html#set_servo_pulsewidth
-HALT = 1500
-
-# Step to increase or decrease the pulse width 
-STEP = 5
+STEP = 0.05
 
 
 class Engine():
     
-    pulsewidth = HALT
-    pi = None
+    duty_cycle = HALT
+    pwm = None
 
-    def __init__(self, pi):
-        self.pi = pi
+    def __init__(self, pwm):
+        self.pwm = pwm
+        self.pwm.start(self.duty_cycle)
     
     async def halt(self):
-        self.pulsewidth = HALT
-        # Set the pulse width of the PWM Pin
-        # More about: https://abyz.me.uk/rpi/pigpio/python.html#set_servo_pulsewidth
-        self.pi.set_servo_pulsewidth(ESC, self.pulsewidth)
+        self.duty_cycle = HALT
+        self.pwm.change_duty_cycle(self.duty_cycle)
         
     async def setSpeed(self, perc):
         # Speed from -100% <--> 0% <--> 100%
@@ -51,51 +36,42 @@ class Engine():
             perc = 100
         
         if perc >= 0:
-            self.pulsewidth = perc * 4 + HALT
+            self.duty_cycle = perc * 4 + HALT
         else:
-            self.pulsewidth = HALT - (perc * 4)
+            self.duty_cycle = HALT - (perc * 4)
         
-        # Set the pulse width of the PWM Pin
-        # More about: https://abyz.me.uk/rpi/pigpio/python.html#set_servo_pulsewidth
-        self.pi.set_servo_pulsewidth(ESC, self.pulsewidth)
+        self.pwm.change_duty_cycle(self.duty_cycle)
+        print(f"Setting Motor PWM: {self.duty_cycle}")
         
     async def getSpeed(self):
         # Pluse width is converted into percentage value from -100% <--> 0% <--> 100%
         
-        if self.pulsewidth >= HALT:
-            return int((self.pulsewidth - HALT) / 4)
+        if self.duty_cycle >= HALT:
+            return int((self.duty_cycle - HALT) / 4)
         else:
-            return (100 - int((abs(self.pulsewidth) - HALT) / 4))
+            return (100 - int((abs(self.duty_cycle) - HALT) / 4))
         
     async def increaseSpeed(self):
         # Increase current pulse width
-        self.pulsewidth += STEP
+        self.duty_cycle += STEP
         
         # If new pulse width reaches the maximum it is set to maximum
-        if self.pulsewidth > MAX:
-            self.pulsewidth = MAX
+        if self.duty_cycle > MAX:
+            self.duty_cycle = MAX
 
-        print(self.pulsewidth)
         
-        # Set the pulse width of the PWM Pin
-        # More about is https://abyz.me.uk/rpi/pigpio/python.html#set_servo_pulsewidth
-        self.pi.set_servo_pulsewidth(ESC, self.pulsewidth)
+        self.pwm.change_duty_cycle(self.duty_cycle)
+        print(f"Increasing Motor Speed: {self.duty_cycle}")
         
     async def decreaseSpeed(self):
         # Decrease current pulse width
-        self.pulsewidth -= STEP
+        self.duty_cycle -= STEP
         
         # If new pulse width reaches the minimum it is set to minimum
-        if self.pulsewidth < MIN:
-            self.pulsewidth = MIN
-            
-        print(self.pulsewidth)
-        # Set the pulse width of the PWM Pin
-        # More about is https://abyz.me.uk/rpi/pigpio/python.html#set_servo_pulsewidth
-        self.pi.set_servo_pulsewidth(ESC, self.pulsewidth)
-        
+        if self.duty_cycle < MIN:
+            self.duty_cycle = MIN
+
+        self.pwm.change_duty_cycle(self.duty_cycle)
         
     async def stop(self):
-        # Set the pulse width of the PWM Pin
-        # More about is https://abyz.me.uk/rpi/pigpio/python.html#set_servo_pulsewidth
-        self.pi.set_servo_pulsewidth(ESC, 0)
+        self.pwm.change_duty_cycle(self.duty_cycle)
