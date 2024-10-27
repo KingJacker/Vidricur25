@@ -4,7 +4,7 @@ import json
 # import gpiod
 from rpi_hardware_pwm import HardwarePWM
 import subprocess
-
+from loguru import logger
 from aiohttp import web
 from queue import Queue
 
@@ -27,16 +27,17 @@ asyncio.run(car.start())
 # If socketio connection is established the connect function is called
 @sio.event
 def connect(sid, environ):
-    print("Remote connected with connection id: ", sid)
+    logger.info(f"Connected: {sid}")
 
 @sio.event
 async def message(sid, data):
-    print(f"Received: {data}")
+    logger.info(f"Received: \n{data}")
     await car.handleEvent(json.loads(data))
 
 @sio.event
 def disconnect(sid):
-    print('Remote disconnected with connection id: ', sid)
+    print(sid)
+    logger.warning(f'Disconnected: {sid}')
 
 FRAME_RATE = 15
 
@@ -49,7 +50,7 @@ async def stream_camera(request):
     ]
     # Start camera process
     proc = await asyncio.create_subprocess_exec(
-        *cmd, stdout=asyncio.subprocess.PIPE
+        *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL
     )
 
     # Stream frames in MJPEG format
