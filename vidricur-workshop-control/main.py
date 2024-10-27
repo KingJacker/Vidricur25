@@ -3,6 +3,7 @@ import socketio
 import json
 # import gpiod
 from rpi_hardware_pwm import HardwarePWM
+import subprocess
 
 from aiohttp import web
 from queue import Queue
@@ -36,6 +37,47 @@ async def message(sid, data):
 @sio.event
 def disconnect(sid):
     print('Remote disconnected with connection id: ', sid)
+
+
+# Camera Stream Handler
+async def stream_camera(request):
+    # Command to stream using libcamera-vid over stdout
+    cmd = [
+        "libcamera-vid", "-t", "0", "--inline", "--codec", "mjpeg",
+        "--framerate", "30", "-o", "-"
+    ]
+    # Start camera process
+    proc = await asyncio.create_subprocess_exec(
+        *cmd, stdout=asyncio.subprocess.PIPE
+    )
+
+    # Stream frames in MJPEG format
+    async def frame_generator():
+        buffer = b""
+        try:
+            while True:
+                chunk = await proc.stdout.read(4096)  # Increased chunk size
+                if not chunk:
+                    break
+                buffer += chunk
+                # Look for frame boundaries
+                while b'\xff\xd9' in buffer:  # JPEG EOF marker
+                    frame_end = buffer.index(b'\xff\xd9') + 2
+                    frame = buffer[:frame_end]
+                    buffer = buffer[frame_end:]
+                    yield (b"--frame\r\n"
+                           b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
+        except asyncio.CancelledError:
+            pass
+        finally:
+            proc.kill()
+
+    # Return the response with multipart MJPEG stream
+    return web.Response(body=frame_generator(), content_type="multipart/x-mixed-replace; boundary=frame")
+
+# Register camera stream route
+app.router.add_get('/camera', stream_camera)
+
 
 if __name__ == '__main__':
     web.run_app(app, host="0.0.0.0", port=8080)
