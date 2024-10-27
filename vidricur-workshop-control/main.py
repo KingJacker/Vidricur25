@@ -38,13 +38,14 @@ async def message(sid, data):
 def disconnect(sid):
     print('Remote disconnected with connection id: ', sid)
 
+FRAME_RATE = 15
 
 # Camera Stream Handler
 async def stream_camera(request):
     # Command to stream using libcamera-vid over stdout
     cmd = [
         "libcamera-vid", "-t", "0", "--inline", "--codec", "mjpeg",
-        "--framerate", "30", "-o", "-"
+        "--framerate", f"{FRAME_RATE}", "-o", "-"
     ]
     # Start camera process
     proc = await asyncio.create_subprocess_exec(
