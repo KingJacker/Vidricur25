@@ -49,8 +49,7 @@ async def stream_camera(request):
         "--framerate", f"{FRAME_RATE}", "-o", "-"
     ]
     # Start camera process
-    proc = await asyncio.create_subprocess_exec(
-        *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL
+    proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE#, stderr=asyncio.subprocess.DEVNULL
     )
 
     # Stream frames in MJPEG format
@@ -77,9 +76,9 @@ async def stream_camera(request):
     # Return the response with multipart MJPEG stream
     return web.Response(body=frame_generator(), content_type="multipart/x-mixed-replace; boundary=frame")
 
-# Register camera stream route
-app.router.add_get('/camera', stream_camera)
+
 
 
 if __name__ == '__main__':
+    app.router.add_get('/camera', stream_camera) # Register camera stream route
     web.run_app(app, host="0.0.0.0", port=8080)
