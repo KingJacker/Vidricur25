@@ -1,0 +1,33 @@
+classDiagram
+  class car {
+    current_angle : int
+    engine : NoneType
+    esc_pwm
+    sio
+    steering_pwm
+    wheel : NoneType
+    handleEvent(event)
+    send_message(message)
+    start()
+  }
+  class engine {
+    duty_cycle : int
+    pwm : NoneType
+    decreaseSpeed()
+    getSpeed()
+    halt()
+    increaseSpeed()
+    map_range(value, input_min, input_max, output_min, output_max)
+    setSpeed(perc)
+    stop()
+  }
+  class wheel {
+    duty_cycle : float
+    pwm : NoneType
+    set_angle(deg)
+  }
+  class main {
+  }
+  car --> wheel
+  car --> engine
+  main --> car
