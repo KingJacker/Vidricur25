@@ -5,11 +5,11 @@ import math
 ### FREQ: 100hz
 
 # Duty Cycles
-MAX = 19
+MAX = 18.95
 MIN = 12
 HALT = 15
 
-STEP = 0.05
+STEP = 1
 
 
 class Engine():
@@ -45,11 +45,11 @@ class Engine():
         
     async def getSpeed(self):
         # Pluse width is converted into percentage value from -100% <--> 0% <--> 100%
-        
+        print(self.duty_cycle)
         if self.duty_cycle >= HALT:
-            return int((self.duty_cycle - HALT) / 4)
+            return self.map_range(self.duty_cycle, HALT, MAX, 0, 100)
         else:
-            return (100 - int((abs(self.duty_cycle) - HALT) / 4))
+            return self.map_range(self.duty_cycle, MIN, HALT, -100, 0)
         
     async def increaseSpeed(self):
         # Increase current pulse width
@@ -75,3 +75,6 @@ class Engine():
         
     async def stop(self):
         self.pwm.change_duty_cycle(self.duty_cycle)
+    
+    def map_range(self, value, input_min, input_max, output_min, output_max):
+        return output_min + (output_max - output_min) * ((value - input_min) / (input_max - input_min))
