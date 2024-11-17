@@ -29,16 +29,11 @@ class Car(metaclass=Singleton):
         self.esc_pwm = esc_pwm
         self.sio = sio
         
-        # Creates an engine instance with the GPIO pi instance reference
         self.engine = Engine(self.esc_pwm)
-        # Creates a wheel instance with the GPIO instance pi reference
         self.wheel = Wheel(self.steering_pwm)
 
     async def start(self):
-        ## Initial configuration    
-        # Wheel straight forward
         await self.wheel.set_angle(90)
-        # Engine halt
         await self.engine.setSpeed(0)
 
         logger.info("SETTING START VALUES")
@@ -47,8 +42,6 @@ class Car(metaclass=Singleton):
         await self.sio.emit("message", json.dumps(message))
 
     async def handleEvent(self, event):
-        #logger.info("Event: ", event)
-        
         is_action = False
         was_successful = False
         error_message = ""
@@ -101,7 +94,7 @@ class Car(metaclass=Singleton):
         
         # Action reponse
         if (is_action):
-            await self.send_message({"ok": was_successful, "error": error_message, "current_angle": self.current_angle, "current_speed": current_speed})
+            await self.send_message({"source": "car", "ok": was_successful, "error": error_message, "current_angle": self.current_angle, "current_speed": current_speed})
         else:
-            await self.send_message({"ok": False, "error": "Invalid action given", "current_angle": self.current_angle, "current_speed": current_speed})
+            await self.send_message({"source": "car", "ok": False, "error": "Invalid action given", "current_angle": self.current_angle, "current_speed": current_speed})
         

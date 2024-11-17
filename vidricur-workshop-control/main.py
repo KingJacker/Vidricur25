@@ -10,8 +10,7 @@ from queue import Queue
 
 from car.car import Car
 
-# On the Pi 5, use channels 0 and 1 to control GPIO_12 and GPIO13, respectively; 
-# use channels 2 and 3 to control GPIO_18 and GPIO_19, respectively
+# On the Pi 5, use channels 0 and 1 to control GPIO_12 and GPIO_13, respectively; 
 # For Rpi 5, use chip=2
 steering_pwm = HardwarePWM(pwm_channel=0, hz=100, chip=2)
 esc_pwm = HardwarePWM(pwm_channel=1, hz=100, chip=2)
