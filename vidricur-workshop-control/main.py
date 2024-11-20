@@ -7,20 +7,28 @@ import subprocess
 from loguru import logger
 from aiohttp import web
 from queue import Queue
+from adafruit_servokit import ServoKit
+
 
 from car.car import Car
 
+####### Servo setup #######
 # On the Pi 5, use channels 0 and 1 to control GPIO_12 and GPIO_13, respectively; 
 # For Rpi 5, use chip=2
-steering_pwm = HardwarePWM(pwm_channel=0, hz=100, chip=2)
+# steering_pwm = HardwarePWM(pwm_channel=0, hz=100, chip=2)
 esc_pwm = HardwarePWM(pwm_channel=1, hz=100, chip=2)
+
+kit = ServoKit(channels=16)
+# kit.servo[0].angle=90
+
+###########################
 
 sio = socketio.AsyncServer()
 app = web.Application()
 sio.attach(app)
 
 # Initialize car instance
-car = Car(sio, steering_pwm, esc_pwm)
+car = Car(sio, kit, esc_pwm)
 asyncio.run(car.start())
 
 # If socketio connection is established the connect function is called
@@ -30,7 +38,7 @@ def connect(sid, environ):
 
 @sio.event
 async def message(sid, data):
-    logger.info(f"Received: \n{data}")
+    # logger.info(f"Received: \n{data}")
     await car.handleEvent(json.loads(data))
 
 @sio.event
