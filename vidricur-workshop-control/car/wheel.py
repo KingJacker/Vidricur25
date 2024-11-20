@@ -6,13 +6,11 @@ ANGLE_MAX = 174
 ANGLE_MID = ANGLE_MAX / 2
 
 class Wheel():
-    servos = None
-
     def __init__(self, servo_kit):
         self.servo_front = servo_kit.servo[0]
         self.servo_rear = servo_kit.servo[1]
 
-        # angles are from -1 to +1
+        # angles are from -100 to +100
         self.angle_front = 0
         self.angle_rear = 0
 
@@ -33,9 +31,15 @@ class Wheel():
             self.servo_rear.angle = self.angle_front
         else:
             logger.error("No Steering Mode provided!")
+
+    async def get_angle(self):
+        return self.angle_front
     
     async def set_steering_mode(self, steering_mode):
         self.steering_mode = steering_mode
+
+    async def get_steering_mode(self):
+        return self.steering_mode
 
     async def map_range(self, value, input_min, input_max, output_min, output_max):
         return output_min + (output_max - output_min) * ((value - input_min) / (input_max - input_min))

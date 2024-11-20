@@ -6,10 +6,6 @@ from car.engine import Engine
 from car.wheel import Wheel
 
 class Car(metaclass=Singleton):
-
-    engine = None
-    wheel = None
-
     def __init__(self, sio, servo_kit, esc_pwm):
         self.servo_kit = servo_kit
         self.esc_pwm = esc_pwm
@@ -23,7 +19,7 @@ class Car(metaclass=Singleton):
 
     async def start(self):
         await self.wheel.set_angle_percent(0)
-        await self.engine.setSpeed(0)
+        await self.engine.set_speed(0)
 
         logger.info("SETTING START VALUES")
 
@@ -39,18 +35,18 @@ class Car(metaclass=Singleton):
             
             # STOP
             if control['space'] != 0:
-                await self.engine.halt()
+                await self.engine.stop()
                 logger.info("Action: Stop")
             
             # FORWARD / BACKWARD
             if control['w'] > 0 and control['s'] == 0:
-                await self.engine.setSpeed(control['w'] * self.max_speed)
+                await self.engine.set_speed(control['w'] * self.max_speed)
                 logger.info("Action: Forward")
             elif control['s'] > 0 and control['w'] == 0:
-                await self.engine.setSpeed(-1 * control['s'] * self.max_speed)
+                await self.engine.set_speed(-1 * control['s'] * self.max_speed)
                 logger.info("Action: Backward")
             else:
-                await self.engine.setSpeed(0)
+                await self.engine.set_speed(0)
                 # logger.info("Action: Reset Speed")
             
             # LEFT / RIGHT
@@ -76,9 +72,15 @@ class Car(metaclass=Singleton):
         else:
             logger.error(f'Received Data without source: {event}')
         
-        # # Action reponse
-        # if (is_action):
-        #     await self.send_message({"source": "car", "ok": was_successful, "error": error_message, "current_angle": self.current_angle, "current_speed": current_speed})
-        # else:
-        #     await self.send_message({"source": "car", "ok": False, "error": "Invalid action given", "current_angle": self.current_angle, "current_speed": current_speed})
-        
+
+        # Response
+        message = {
+            'source': 'car',
+            'content': {
+                'angle': await self.wheel.get_angle(),
+                'steering_mode': await self.wheel.get_steering_mode(),
+                'speed': await self.engine.get_speed()
+            }
+        }
+        # logger.warning(f'sending: {message}')
+        await self.send_message(message)
