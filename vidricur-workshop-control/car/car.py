@@ -5,24 +5,10 @@ from queue import Queue
 from car.engine import Engine
 from car.wheel import Wheel
 
-# Event types:
-# Move event: Instruction to move the car
-# JSON Request: {"action": "move", "options": {"speed": [-1, 0, 1], "angle": [0-180]}}
-# JSON Response: {"ok": [true|false], "error": "", "current_angle": [0-180], "current_speed": [-100-100]}
-
-# Stop event: Stop movement of the car
-# JSON Request: {"action": "stop"}
-# JSON Response: {"ok": [true|false], "error": "", "current_angle": [0-180], "current_speed": [-100-100]}
-
-# Disconnect event: Car control is disconnected from the remote
-# JSON Request: {"action": "disconnect"}
-# JSON Response: {"ok": [true|false], "error": "", "current_angle": [0-180], "current_speed": [-100-100]}
-
 class Car(metaclass=Singleton):
 
     engine = None
     wheel = None
-    current_angle = 0
 
     def __init__(self, sio, steering_pwm, esc_pwm):
         self.steering_pwm = steering_pwm
@@ -32,10 +18,9 @@ class Car(metaclass=Singleton):
         self.engine = Engine(self.esc_pwm)
         self.wheel = Wheel(self.steering_pwm)
 
-        self.max_angle = 0.5
+        self.max_angle = 0
         self.max_speed = 0
-
-
+        self.steering_mode = 'front-steering'
 
     async def start(self):
         await self.wheel.set_angle(90)
@@ -82,59 +67,15 @@ class Car(metaclass=Singleton):
                 await self.wheel.set_angle_percent(0)
                 # logger.info("Action: Reset Angle")
 
-        # if event["source"] == "remote":
-        #     logger.debug(event)
-
-
-        # is_action = False
-        # was_successful = False
-        # error_message = ""
         
-        # # If the event is a move event
-        # if event["action"] == "move":
-        #     # Get angle of the wheels
-        #     angle = int(event["options"]["angle"])
-            
-        #     # Decrease the event
-        #     if event["options"]["speed"] == -1:
-        #         # Decrease the engine speed
-        #         await self.engine.decreaseSpeed()
-        #         logger.info("Action - Decrease engine speed")
-        #         is_action = True
-        #         was_successful = True
-                
-        #     # Increase the event
-        #     elif event["options"]["speed"] == 1:
-        #         # Increase the engine speed
-        #         await self.engine.increaseSpeed()
-        #         logger.info("Action - Increase engine speed")
-        #         is_action = True
-        #         was_successful = True
-            
-        #     # If there is a new angle compared to the current angle
-        #     if self.current_angle != angle:
-        #         # Set new angle of the wheels
-        #         await self.wheel.set_angle(int(event["options"]["angle"]))
-        #         self.current_angle = angle
-        #         logger.info("Action - Set wheel angle: " + str(angle))
-        #         is_action = True
-        #         was_successful = True
-                
-        # # Stop the car event
-        # elif event["action"] == "stop":
-        #     await self.engine.halt()
-        #     logger.info("Action - Stop")
-        #     is_action = True
-        #     was_successful = True
-            
-        # # If the websocket disconnect -> Emerency halt of the car
-        # elif event["action"] == "disconnect":
-        #     await self.engine.halt()
-        #     logger.info("Action - Disconnect: Emergency halt!")
-        #     is_action = True
-        #     was_successful = True
-        
-        # current_speed = await self.engine.getSpeed()
+        elif event["source"] == "webinterface":
+            config = event['content']['config']
+            self.max_angle = config['max_steering_angle'] / 100
+            self.max_speed = config['max_speed']
+            self.steering_mode = config['steering_mode']
+
+        else:
+            logger.error(f'Received Data without source: {event}')
         
         # # Action reponse
         # if (is_action):
