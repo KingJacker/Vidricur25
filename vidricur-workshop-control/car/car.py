@@ -10,20 +10,19 @@ class Car(metaclass=Singleton):
     engine = None
     wheel = None
 
-    def __init__(self, sio, steering_pwm, esc_pwm):
-        self.steering_pwm = steering_pwm
+    def __init__(self, sio, servo_kit, esc_pwm):
+        self.servo_kit = servo_kit
         self.esc_pwm = esc_pwm
         self.sio = sio
         
         self.engine = Engine(self.esc_pwm)
-        self.wheel = Wheel(self.steering_pwm)
+        self.wheel = Wheel(self.servo_kit)
 
         self.max_angle = 0
         self.max_speed = 0
-        self.steering_mode = 'front-steering'
 
     async def start(self):
-        await self.wheel.set_angle(90)
+        await self.wheel.set_angle_percent(0)
         await self.engine.setSpeed(0)
 
         logger.info("SETTING START VALUES")
@@ -72,7 +71,7 @@ class Car(metaclass=Singleton):
             config = event['content']['config']
             self.max_angle = config['max_steering_angle'] / 100
             self.max_speed = config['max_speed']
-            self.steering_mode = config['steering_mode']
+            await self.wheel.set_steering_mode(config['steering_mode'])
 
         else:
             logger.error(f'Received Data without source: {event}')
