@@ -19,8 +19,8 @@ class Wheel():
         self.steering_mode = 'front-steering'
 
     async def set_angle_percent(self, perc):
-        self.angle_front = await self.map_range(perc, -1, 1, ANGLE_MIN, ANGLE_MAX)
-        self.angle_rear = await self.map_range(perc, -1, 1, ANGLE_MAX, ANGLE_MIN) # inverese
+        self.angle_front = await self.map_range(perc, -100, 100, ANGLE_MIN, ANGLE_MAX)
+        self.angle_rear = await self.map_range(perc, -100, 100, ANGLE_MAX, ANGLE_MIN) # inverese
 
         logger.info(f'Set Angle: {self.angle_front} / {self.angle_rear} ({perc}) Mode: {self.steering_mode}')
 

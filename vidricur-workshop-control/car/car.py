@@ -69,7 +69,7 @@ class Car(metaclass=Singleton):
         
         elif event["source"] == "webinterface":
             config = event['content']['config']
-            self.max_angle = config['max_steering_angle'] / 100
+            self.max_angle = config['max_steering_angle']
             self.max_speed = config['max_speed']
             await self.wheel.set_steering_mode(config['steering_mode'])
 
