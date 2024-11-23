@@ -79,8 +79,10 @@ class Car(metaclass=Singleton):
             'content': {
                 'angle': await self.wheel.get_angle(),
                 'steering_mode': await self.wheel.get_steering_mode(),
-                'speed': await self.engine.get_speed()
+                'speed': await self.engine.get_speed(),
+                'car_socket_status': 'true'
             }
+            
         }
-        # logger.warning(f'sending: {message}')
+        logger.success(f'Response: {message}')
         await self.send_message(message)
