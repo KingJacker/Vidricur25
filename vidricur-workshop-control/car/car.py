@@ -22,10 +22,10 @@ class Car(metaclass=Singleton):
         self.max_angle = 0
         self.max_speed = 0
 
-    async def start(self):
+    def start(self):
         logger.info("SETTING START VALUES")
-        await self.wheel.set_angle_percent(self.wheel.initial_angle)
-        await self.engine.set_speed(0)
+        self.wheel.set_angle_percent(self.wheel.initial_angle)
+        self.engine.set_speed(0)
 
     async def send_message(self, message):
         await self.sio.emit("message", json.dumps(message))
@@ -39,31 +39,31 @@ class Car(metaclass=Singleton):
             
             # STOP
             if control['space'] != 0:
-                await self.engine.stop()
+                self.engine.stop()
                 logger.info("Action: Stop")
             
             # FORWARD / BACKWARD
             if control['w'] > 0 and control['s'] == 0:
-                await self.engine.set_speed(control['w'] * self.max_speed)
+                self.engine.set_speed(control['w'] * self.max_speed)
                 logger.info("Action: Forward")
             elif control['s'] > 0 and control['w'] == 0:
-                await self.engine.set_speed(-1 * control['s'] * self.max_speed)
+                self.engine.set_speed(-1 * control['s'] * self.max_speed)
                 logger.info("Action: Backward")
             else:
-                await self.engine.set_speed(0)
+                self.engine.set_speed(0)
                 # logger.info("Action: Reset Speed")
             
             # LEFT / RIGHT
             if control['a'] > 0 and control['d'] == 0:
                 perc = control['a'] * self.max_angle
-                await self.wheel.set_angle_percent(perc)
+                self.wheel.set_angle_percent(perc)
                 logger.info(f"Action: Left ({perc})")
             elif control['d'] > 0 and control['a'] == 0:
                 perc = -1 * control['d'] * self.max_angle
-                await self.wheel.set_angle_percent(perc)
+                self.wheel.set_angle_percent(perc)
                 logger.info(f"Action: Right ({perc})")
             else:
-                await self.wheel.set_angle_percent(0)
+                self.wheel.set_angle_percent(0)
                 # logger.info("Action: Reset Angle")
 
         
@@ -71,7 +71,7 @@ class Car(metaclass=Singleton):
             config = event['content']['config']
             self.max_angle = config['max_steering_angle']
             self.max_speed = config['max_speed']
-            await self.wheel.set_steering_mode(config['steering_mode'])
+            self.wheel.set_steering_mode(config['steering_mode'])
 
         else:
             logger.error(f'Received Data without source: {event}')
@@ -81,9 +81,9 @@ class Car(metaclass=Singleton):
         message = {
             'source': 'car',
             'content': {
-                'angle': await self.wheel.get_angle(),
-                'steering_mode': await self.wheel.get_steering_mode(),
-                'speed': await self.engine.get_speed(),
+                'angle': self.wheel.get_angle(),
+                'steering_mode': self.wheel.get_steering_mode(),
+                'speed': self.engine.get_speed(),
                 'car_socket_status': 'true'
             }
             

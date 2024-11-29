@@ -32,7 +32,7 @@ sio.attach(app)
 
 # Initialize car instance
 car = Car(sio, kit, esc_pwm)
-asyncio.run(car.start())
+car.start()
 
 # If socketio connection is established the connect function is called
 @sio.event
