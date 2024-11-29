@@ -17,8 +17,11 @@ from car.car import Car
 # For Rpi 5, use chip=2
 # steering_pwm = HardwarePWM(pwm_channel=0, hz=100, chip=2)
 esc_pwm = HardwarePWM(pwm_channel=1, hz=100, chip=2)
-
-kit = ServoKit(channels=16)
+try:
+    kit = ServoKit(channels=16)
+except Exception as e:
+    logger.critical(f'Servo Driver not found: {e}')
+    kit = None
 # kit.servo[0].angle=90
 
 ###########################

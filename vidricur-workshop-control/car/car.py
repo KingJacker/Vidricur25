@@ -11,17 +11,21 @@ class Car(metaclass=Singleton):
         self.esc_pwm = esc_pwm
         self.sio = sio
         
+        # Instanzierung
         self.engine = Engine(self.esc_pwm)
-        self.wheel = Wheel(self.servo_kit)
+        
+        try:
+            self.wheel = Wheel(self.servo_kit)
+        except Exception as e:
+            logger.critical(f'Could not instantiate Wheel: {e}')
 
         self.max_angle = 0
         self.max_speed = 0
 
     async def start(self):
-        await self.wheel.set_angle_percent(0)
-        await self.engine.set_speed(0)
-
         logger.info("SETTING START VALUES")
+        await self.wheel.set_angle_percent(self.wheel.initial_angle)
+        await self.engine.set_speed(0)
 
     async def send_message(self, message):
         await self.sio.emit("message", json.dumps(message))
