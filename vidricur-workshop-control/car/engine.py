@@ -25,7 +25,7 @@ class Engine():
     # speed in percent -100 to 100
     async def set_speed(self, speed): 
         self.speed = speed
-        duty_cycle = await self.map_range(self.speed, -100, 100, MIN, MAX)
+        duty_cycle = self.map_range(self.speed, -100, 100, MIN, MAX)
 
         logger.info(f"Speed: {duty_cycle} ({self.speed})")
         
@@ -34,5 +34,5 @@ class Engine():
     async def get_speed(self):
         return self.speed
 
-    async def map_range(self, value, input_min, input_max, output_min, output_max):
+    def map_range(self, value, input_min, input_max, output_min, output_max):
         return output_min + (output_max - output_min) * ((value - input_min) / (input_max - input_min))
