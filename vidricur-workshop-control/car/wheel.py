@@ -9,12 +9,15 @@ class Wheel():
         self.servo_front = servo_kit.servo[0]
         self.servo_rear = servo_kit.servo[1]
 
-        self.initial_angle = ANGLE_MID
-
         # angles are from -100 to +100
         self.angle_front = 0
         self.angle_rear = 0
         self.steering_mode = 'front-steering'
+
+        # set initial servo position
+        self.initial_angle = ANGLE_MID
+        self.servo_front.angle = self.initial_angle
+        self.servo_rear.angle = self.initial_angle
 
     def set_angle_percent(self, perc):
         self.angle_front = self.map_range(perc, -100, 100, ANGLE_MIN, ANGLE_MAX)

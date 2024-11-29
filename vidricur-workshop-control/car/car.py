@@ -22,11 +22,6 @@ class Car(metaclass=Singleton):
         self.max_angle = 0
         self.max_speed = 0
 
-    def start(self):
-        logger.info("SETTING START VALUES")
-        self.wheel.set_angle_percent(self.wheel.initial_angle)
-        self.engine.set_speed(0)
-
     async def send_message(self, message):
         await self.sio.emit("message", json.dumps(message))
 

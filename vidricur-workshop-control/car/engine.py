@@ -15,6 +15,10 @@ class Engine():
         self.pwm.start(HALT)
         
         self.speed = 0
+
+        # set initial motor speed
+        self.initial_speed = 0
+        self.set_speed(self.initial_speed)
     
     def stop(self):
         self.speed = 0
