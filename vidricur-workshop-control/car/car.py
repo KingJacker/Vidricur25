@@ -79,7 +79,9 @@ class Car(metaclass=Singleton):
                 'angle': self.wheel.get_angle(),
                 'steering_mode': self.wheel.get_steering_mode(),
                 'speed': self.engine.get_speed(),
-                'car_socket_status': 'true'
+                'car_socket_status': 'true',
+                'max_angle': self.max_angle,
+                'max_speed': self.max_speed
             }
             
         }
