@@ -1,16 +1,12 @@
 class Float():
-	def __init__(self, servo_kit, servo_channel_left, servo_channel_right):
+	def __init__(self, servo_kit, servo_channel_left, servo_channel_right, angle_up, angle_down):
 		self.servo_left = servo_kit.servo[servo_channel_left]
 		self.servo_right = servo_kit.servo[servo_channel_right]
 
-		self.position = None
+		self.angle_up = angle_up
+		self.angle_down = angle_down
 
-		### set positions
-		self.angle_up = 0
-		self.angle_down = 270
-
-		### start postition
-		self.up()
+		self.position = None	
 
 	def down(self):
 		self.servo_left.angle = self.angle_down

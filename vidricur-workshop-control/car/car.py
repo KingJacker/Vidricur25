@@ -4,6 +4,7 @@ from patterns.singleton import Singleton
 from queue import Queue
 from car.engine import Engine
 from car.wheel import Wheel
+from car.float import Float
 
 class Car(metaclass=Singleton):
     def __init__(self, sio, servo_kit, esc_pwm):
@@ -16,8 +17,9 @@ class Car(metaclass=Singleton):
         
         try:
             self.wheel = Wheel(self.servo_kit)
+            self.flaot = Float(self.servo_kit, 4, 5, 0, 270)
         except Exception as e:
-            logger.critical(f'Could not instantiate Wheel: {e}')
+            logger.critical(f'Could not Instantiate: {e}')
 
         self.max_angle = 0
         self.max_speed = 0
@@ -60,6 +62,12 @@ class Car(metaclass=Singleton):
             else:
                 self.wheel.set_angle_percent(0)
                 # logger.info("Action: Reset Angle")
+            
+            # Floats
+            if control['float'] == 'up':
+                self.float.up()
+            else:
+                self.float.down()
 
         
         elif event["source"] == "webinterface":
@@ -81,7 +89,8 @@ class Car(metaclass=Singleton):
                 'speed': self.engine.get_speed(),
                 'car_socket_status': 'true',
                 'max_angle': self.max_angle,
-                'max_speed': self.max_speed
+                'max_speed': self.max_speed,
+                'float_position': self.float.get_position()
             }
             
         }
