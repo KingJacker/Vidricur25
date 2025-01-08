@@ -17,9 +17,10 @@ class Car(metaclass=Singleton):
         
         # WHEEL
         try:
+
             self.wheel = Wheel(self.pca)
         except Exception as e:
-            logger.critical(f'Could not instantiate Wheel: {e}')
+            logger.critical(f'Could not Instantiate: {e}')
 
         # FLOAT
         try: 
@@ -68,6 +69,12 @@ class Car(metaclass=Singleton):
             else:
                 self.wheel.set_angle_percent(0)
                 # logger.info("Action: Reset Angle")
+            
+            # Floats
+            if control['float'] == 'up':
+                self.float.up()
+            else:
+                self.float.down()
 
         
         elif event["source"] == "webinterface":
@@ -92,7 +99,11 @@ class Car(metaclass=Singleton):
                 'car_socket_status': 'true',
                 'max_angle': self.max_angle,
                 'max_speed': self.max_speed,
+<<<<<<< HEAD
                 'float_state': self.float.get_float_state()
+=======
+                'float_position': self.float.get_position()
+>>>>>>> a1cc58826eae6e2b3fed5c6c6397d08a951fe4f3
             }
             
         }
