@@ -4,20 +4,28 @@ from patterns.singleton import Singleton
 from queue import Queue
 from car.engine import Engine
 from car.wheel import Wheel
+from car.float import Float
 
 class Car(metaclass=Singleton):
-    def __init__(self, sio, servo_kit, esc_pwm):
-        self.servo_kit = servo_kit
+    def __init__(self, sio, pca, esc_pwm):
+        self.pca = pca
         self.esc_pwm = esc_pwm
         self.sio = sio
         
-        # Instanzierung
+        # ENGINE
         self.engine = Engine(self.esc_pwm)
         
+        # WHEEL
         try:
-            self.wheel = Wheel(self.servo_kit)
+            self.wheel = Wheel(self.pca)
         except Exception as e:
             logger.critical(f'Could not instantiate Wheel: {e}')
+
+        # FLOAT
+        try: 
+            self.float = Float(self.pca)
+        except Exception as e:
+            logger.critical(f'Could not instantiate Float: {e}')
 
         self.max_angle = 0
         self.max_speed = 0
@@ -67,6 +75,8 @@ class Car(metaclass=Singleton):
             self.max_angle = config['max_steering_angle']
             self.max_speed = config['max_speed']
             self.wheel.set_steering_mode(config['steering_mode'])
+            self.float.set_float(config['float'])
+            logger.debug(event)
 
         else:
             logger.error(f'Received Data without source: {event}')
@@ -81,7 +91,8 @@ class Car(metaclass=Singleton):
                 'speed': self.engine.get_speed(),
                 'car_socket_status': 'true',
                 'max_angle': self.max_angle,
-                'max_speed': self.max_speed
+                'max_speed': self.max_speed,
+                'float_state': self.float.get_float_state()
             }
             
         }

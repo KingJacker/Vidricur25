@@ -9,20 +9,21 @@ from aiohttp import web
 from queue import Queue
 from adafruit_servokit import ServoKit
 
+import board
+from adafruit_pca9685 import PCA9685
 
 from car.car import Car
 
 ####### Servo setup #######
 # On the Pi 5, use channels 0 and 1 to control GPIO_12 and GPIO_13, respectively; 
 # For Rpi 5, use chip=2
-# steering_pwm = HardwarePWM(pwm_channel=0, hz=100, chip=2)
 esc_pwm = HardwarePWM(pwm_channel=1, hz=100, chip=2)
 try:
-    kit = ServoKit(channels=16)
+    i2c = board.I2C()  # uses board.SCL and board.SDA
+    pca = PCA9685(i2c)
+    pca.frequency = 50
 except Exception as e:
     logger.critical(f'Servo Driver not found: {e}')
-    kit = None
-# kit.servo[0].angle=90
 
 ###########################
 
@@ -31,7 +32,7 @@ app = web.Application()
 sio.attach(app)
 
 # Initialize car instance
-car = Car(sio, kit, esc_pwm)
+car = Car(sio, pca, esc_pwm)
 
 # If socketio connection is established the connect function is called
 @sio.event
@@ -47,6 +48,8 @@ async def message(sid, data):
 def disconnect(sid):
     print(sid)
     logger.warning(f'Disconnected: {sid}')
+    logger.critical(f'Shutting down Motor')
+    car.engine.stop()
 
 FRAME_RATE = 15
 

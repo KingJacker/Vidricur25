@@ -1,13 +1,15 @@
 from loguru import logger
+from adafruit_motor import servo
 
 ANGLE_MIN = 0
 ANGLE_MAX = 180
 ANGLE_MID = ANGLE_MAX / 2
 
 class Wheel():
-    def __init__(self, servo_kit):
-        self.servo_front = servo_kit.servo[0]
-        self.servo_rear = servo_kit.servo[1]
+    def __init__(self, pca):
+
+        self.servo_front = servo.Servo(pca.channels[0]) # no definition of min/ max pulse -> default 180 deg servo
+        self.servo_rear = servo.Servo(pca.channels[1])
 
         # angles are from -100 to +100
         self.angle_front = 0
