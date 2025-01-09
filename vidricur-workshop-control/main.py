@@ -1,13 +1,9 @@
 import asyncio
 import socketio
 import json
-# import gpiod
 from rpi_hardware_pwm import HardwarePWM
-import subprocess
 from loguru import logger
 from aiohttp import web
-from queue import Queue
-from adafruit_servokit import ServoKit
 
 import board
 from adafruit_pca9685 import PCA9685
@@ -48,7 +44,7 @@ async def message(sid, data):
 def disconnect(sid):
     print(sid)
     logger.warning(f'Disconnected: {sid}')
-    logger.critical(f'Shutting down Motor')
+    logger.critical('Shutting down Motor')
     car.engine.stop()
 
 FRAME_RATE = 15

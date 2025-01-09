@@ -1,7 +1,6 @@
 import json
 from loguru import logger
 from patterns.singleton import Singleton
-from queue import Queue
 from car.engine import Engine
 from car.wheel import Wheel
 from car.float import Float
