@@ -70,10 +70,13 @@ class Car(metaclass=Singleton):
                 # logger.info("Action: Reset Angle")
             
             # Floats
-            if control['float'] == 'up':
-                self.float.up()
-            else:
-                self.float.down()
+            # print(control)
+            # if control['float_state'] == 'UP':
+            #     self.float.up()
+            # elif control['float_state'] == 'DOWN':
+            #     self.float.down()
+            # else:
+            #     logger.error("NO FLOAT SIGNAL")
 
         
         elif event["source"] == "webinterface":
@@ -81,7 +84,7 @@ class Car(metaclass=Singleton):
             self.max_angle = config['max_steering_angle']
             self.max_speed = config['max_speed']
             self.wheel.set_steering_mode(config['steering_mode'])
-            self.float.set_float(config['float'])
+            self.float.set_float(config['float']) # setting float
             logger.debug(event)
 
         else:
