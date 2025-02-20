@@ -8,8 +8,11 @@ class Float():
         self.servo_left = servo.Servo(pca.channels[2], min_pulse=500, max_pulse = 2500, actuation_range=360)
         self.servo_right = servo.Servo(pca.channels[3], min_pulse=500, max_pulse = 2500, actuation_range=360)
 
-        self.up_pos = 25
-        self.down_pos = 290
+        self.up_pos_left = 25
+        self.down_pos_left = 290
+
+        self.up_pos_right = 25
+        self.down_pos_right = 290
 
         self.state = None
 
@@ -22,13 +25,13 @@ class Float():
             logger.error("float not defined")
     
     def float_up(self):
-        self.servo_left.angle = self.up_pos
-        self.servo_right.angle = self.up_pos
+        self.servo_left.angle = self.up_pos_left
+        self.servo_right.angle = self.up_pos_right
         self.state = "UP"
 
     def float_down(self):
-        self.servo_left.angle = self.down_pos
-        self.servo_right.angle = self.down_pos
+        self.servo_left.angle = self.down_pos_left
+        self.servo_right.angle = self.down_pos_right
         self.state = "DOWN"
     
     def get_float_state(self):
