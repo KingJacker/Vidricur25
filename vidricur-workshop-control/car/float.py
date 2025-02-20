@@ -8,11 +8,11 @@ class Float():
         self.servo_left = servo.Servo(pca.channels[2], min_pulse=500, max_pulse = 2500, actuation_range=360)
         self.servo_right = servo.Servo(pca.channels[3], min_pulse=500, max_pulse = 2500, actuation_range=360)
 
-        self.up_pos_left = 25
-        self.down_pos_left = 290
+        self.up_pos_left = 305
+        self.down_pos_left = 55
 
-        self.up_pos_right = 25
-        self.down_pos_right = 290
+        self.up_pos_right = 10
+        self.down_pos_right = 255
 
         self.state = None
 
