@@ -1,0 +1,21 @@
+{
+	"floats": {
+		"left":{
+			"up":305,
+			"down":55	
+		},
+		"right":{
+			"up":10,
+			"down":255	
+		}
+	},
+	"steering": {
+		"front":90,
+		"rear":90,
+		"max":20
+	},
+	"drive":{
+		"min":10,
+		"max":30
+	}
+}
