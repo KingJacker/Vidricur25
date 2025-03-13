@@ -1,6 +1,6 @@
 import json
 
-CONFIG_PATH = "config.json"
+CONFIG_PATH = "/home/pi/project/vidricur-2024-team02-control/vidricur-workshop-control/car/config.json"
 
 def read_config():
     with open(CONFIG_PATH, "r") as file:
@@ -9,6 +9,7 @@ def read_config():
 def write_config(config):
     with open(CONFIG_PATH, "w") as file:
         file.write(json.dumps(config))
+    return read_config()
 
 def get_steering_config():
     config = read_config()

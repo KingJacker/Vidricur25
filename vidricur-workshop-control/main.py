@@ -10,6 +10,8 @@ from adafruit_pca9685 import PCA9685
 
 from car.car import Car
 
+import car.config_handler as ch
+
 ####### Servo setup #######
 # On the Pi 5, use channels 0 and 1 to control GPIO_12 and GPIO_13, respectively; 
 # For Rpi 5, use chip=2
@@ -23,7 +25,7 @@ except Exception as e:
 
 ###########################
 
-sio = socketio.AsyncServer()
+sio = socketio.AsyncServer(ping_interval=0.5, ping_timeout=1)
 app = web.Application()
 sio.attach(app)
 
@@ -46,6 +48,19 @@ def disconnect(sid):
     logger.warning(f'Disconnected: {sid}')
     logger.critical('Shutting down Motor')
     car.engine.stop()
+
+@sio.on("get_config")
+async def handle_get_config(sid):
+    print("Received config request")
+    config_data = ch.read_config()
+    await sio.emit("config_response", config_data, to=sid)
+
+@sio.on("update_config")
+async def handle_get_config(sid, data):
+    config_data = ch.write_config(data)
+    print(f"Received config update {data}")
+    print(f"Updated Config: {config_data}")
+    # await sio.emit("config_response", config_data, to=sid)
 
 FRAME_RATE = 15
 
