@@ -56,11 +56,16 @@ async def handle_get_config(sid):
     await sio.emit("config_response", config_data, to=sid)
 
 @sio.on("update_config")
-async def handle_get_config(sid, data):
+async def handle_get_config(sid, new_config):
+    config_data = ch.write_config(new_config)
+    print(f"Received config update {new_config}")
+
+@sio.on("get_pwm_channel")
+async def handle_get_config(sid, channel):
     config_data = ch.write_config(data)
     print(f"Received config update {data}")
     print(f"Updated Config: {config_data}")
-    # await sio.emit("config_response", config_data, to=sid)
+
 
 FRAME_RATE = 15
 

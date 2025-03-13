@@ -9,7 +9,6 @@ def read_config():
 def write_config(config):
     with open(CONFIG_PATH, "w") as file:
         file.write(json.dumps(config))
-    return read_config()
 
 def get_steering_config():
     config = read_config()
