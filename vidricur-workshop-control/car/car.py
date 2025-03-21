@@ -33,77 +33,35 @@ class Car(metaclass=Singleton):
     async def send_message(self, message):
         await self.sio.emit("message", json.dumps(message))
 
-    async def handleEvent(self, event):
-        logger.debug(event)
+    async def command_handler(self, command):
+        logger.debug(command)
 
-        # CONTROl EVENT
-        if event["source"] == "control":
-            control = event['content']['control']
-            
-            # STOP
-            if control['space'] != 0:
-                self.engine.stop()
-                logger.info("Action: Stop")
-            
-            # FORWARD / BACKWARD
-            if control['w'] > 0 and control['s'] == 0:
-                self.engine.set_speed(control['w'] * self.max_speed)
-                logger.info("Action: Forward")
-            elif control['s'] > 0 and control['w'] == 0:
-                self.engine.set_speed(-1 * control['s'] * self.max_speed)
-                logger.info("Action: Backward")
-            else:
-                self.engine.set_speed(0)
-                # logger.info("Action: Reset Speed")
-            
-            # LEFT / RIGHT
-            if control['a'] > 0 and control['d'] == 0:
-                perc = control['a'] * self.max_angle
-                self.wheel.set_angle_percent(perc)
-                logger.info(f"Action: Left ({perc})")
-            elif control['d'] > 0 and control['a'] == 0:
-                perc = -1 * control['d'] * self.max_angle
-                self.wheel.set_angle_percent(perc)
-                logger.info(f"Action: Right ({perc})")
-            else:
-                self.wheel.set_angle_percent(0)
-                # logger.info("Action: Reset Angle")
-            
-            # Floats
-            # print(control)
-            # if control['float_state'] == 'UP':
-            #     self.float.up()
-            # elif control['float_state'] == 'DOWN':
-            #     self.float.down()
-            # else:
-            #     logger.error("NO FLOAT SIGNAL")
-
+        # STOP
+        if command['space'] != 0:
+            self.engine.stop()
+            logger.info("Action: Stop")
         
-        elif event["source"] == "webinterface":
-            config = event['content']['config']
-            self.max_angle = config['max_steering_angle']
-            self.max_speed = config['max_speed']
-            self.wheel.set_steering_mode(config['steering_mode'])
-            self.float.set_float(config['float']) # setting float
-            logger.debug(event)
-
+        # FORWARD / BACKWARD
+        if command['w'] > 0 and command['s'] == 0:
+            self.engine.set_speed(command['w'] * self.max_speed)
+            logger.info("Action: Forward")
+        elif command['s'] > 0 and command['w'] == 0:
+            self.engine.set_speed(-1 * command['s'] * self.max_speed)
+            logger.info("Action: Backward")
         else:
-            logger.error(f'Received Data without source: {event}')
+            self.engine.set_speed(0)
+            # logger.info("Action: Reset Speed")
         
+        # LEFT / RIGHT
+        if command['a'] > 0 and command['d'] == 0:
+            perc = command['a'] * self.max_angle
+            self.wheel.set_angle_percent(perc)
+            logger.info(f"Action: Left ({perc})")
+        elif command['d'] > 0 and command['a'] == 0:
+            perc = -1 * command['d'] * self.max_angle
+            self.wheel.set_angle_percent(perc)
+            logger.info(f"Action: Right ({perc})")
+        else:
+            self.wheel.set_angle_percent(0)
+            # logger.info("Action: Reset Angle")
 
-        # Response
-        message = {
-            'source': 'car',
-            'content': {
-                'angle': self.wheel.get_angle(),
-                'steering_mode': self.wheel.get_steering_mode(),
-                'speed': self.engine.get_speed(),
-                'car_socket_status': 'true',
-                'max_angle': self.max_angle,
-                'max_speed': self.max_speed,
-                'float_state': self.float.get_float_state()
-            }
-            
-        }
-        logger.success(f'Response: {message}')
-        await self.send_message(message)
