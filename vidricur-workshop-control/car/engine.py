@@ -12,6 +12,9 @@ class Engine():
 
     def __init__(self, pwm):
         self.pwm = pwm
+
+        self.max_speed = 0
+
         self.pwm.start(HALT)
         
         self.speed = 0
@@ -29,12 +32,18 @@ class Engine():
         self.speed = speed
         duty_cycle = self.map_range(self.speed, -100, 100, MIN, MAX)
 
-        logger.info(f"Speed: {duty_cycle} ({self.speed})")
+        # logger.info(f"Speed: {duty_cycle} ({self.speed})")
         
         self.pwm.change_duty_cycle(duty_cycle)
         
     def get_speed(self):
         return self.speed
+
+    def set_max_speed(self, max_speed):
+        self.max_speed = max_speed
+
+    def get_max_speed(self):
+        return self.max_speed
 
     def map_range(self, value, input_min, input_max, output_min, output_max):
         return output_min + (output_max - output_min) * ((value - input_min) / (input_max - input_min))

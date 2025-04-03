@@ -4,15 +4,20 @@ from patterns.singleton import Singleton
 from car.engine import Engine
 from car.wheel import Wheel
 from car.float import Float
+from car.sensors import Sensors
 
 class Car(metaclass=Singleton):
-    def __init__(self, sio, pca, esc_pwm):
+    def __init__(self, sio, pca, i2c):
         self.pca = pca
-        self.esc_pwm = esc_pwm
+        # self.esc_pwm
         self.sio = sio
+        self.i2c = i2c
+
+        # SENSORS
+        self.sensors = Sensors(i2c)
         
         # ENGINE
-        self.engine = Engine(self.esc_pwm)
+        # self.engine = Engine(self.esc_pwm)
         
         # WHEEL
         try:
@@ -36,32 +41,32 @@ class Car(metaclass=Singleton):
     async def command_handler(self, command):
         logger.debug(command)
 
-        # STOP
-        if command['space'] != 0:
-            self.engine.stop()
-            logger.info("Action: Stop")
+        # # STOP
+        # if command['space'] != 0:
+        #     self.engine.stop()
+        #     logger.info("Action: Stop")
         
-        # FORWARD / BACKWARD
-        if command['w'] > 0 and command['s'] == 0:
-            self.engine.set_speed(command['w'] * self.max_speed)
-            logger.info("Action: Forward")
-        elif command['s'] > 0 and command['w'] == 0:
-            self.engine.set_speed(-1 * command['s'] * self.max_speed)
-            logger.info("Action: Backward")
-        else:
-            self.engine.set_speed(0)
-            # logger.info("Action: Reset Speed")
+        # # FORWARD / BACKWARD
+        # if command['w'] > 0 and command['s'] == 0:
+        #     self.engine.set_speed(command['w'] * self.max_speed)
+        #     # logger.info("Action: Forward")
+        # elif command['s'] > 0 and command['w'] == 0:
+        #     self.engine.set_speed(-1 * command['s'] * self.max_speed)
+        #     # logger.info("Action: Backward")
+        # else:
+        #     self.engine.set_speed(0)
+        #     # logger.info("Action: Reset Speed")
         
         # LEFT / RIGHT
         if command['a'] > 0 and command['d'] == 0:
-            perc = command['a'] * self.max_angle
-            self.wheel.set_angle_percent(perc)
-            logger.info(f"Action: Left ({perc})")
+            steering_value = command['a']
+            self.wheel.set_angle(steering_value)
+            # logger.info(f"Action: Left ({steering_value})")
         elif command['d'] > 0 and command['a'] == 0:
-            perc = -1 * command['d'] * self.max_angle
-            self.wheel.set_angle_percent(perc)
-            logger.info(f"Action: Right ({perc})")
+            steering_value = -1 * command['d']
+            self.wheel.set_angle(steering_value)
+            # logger.info(f"Action: Right ({steering_value})")
         else:
-            self.wheel.set_angle_percent(0)
+            self.wheel.set_angle(0)
             # logger.info("Action: Reset Angle")
 

@@ -1,7 +1,7 @@
 import asyncio
 import socketio
 import json
-from rpi_hardware_pwm import HardwarePWM
+# from rpi_hardware_pwm import HardwarePWM
 from loguru import logger
 from aiohttp import web
 import subprocess
@@ -16,7 +16,7 @@ import car.config_handler as ch
 ####### Servo setup #######
 # On the Pi 5, use channels 0 and 1 to control GPIO_12 and GPIO_13, respectively; 
 # For Rpi 5, use chip=2
-esc_pwm = HardwarePWM(pwm_channel=1, hz=100, chip=2)
+# esc_pwm = HardwarePWM(pwm_channel=1, hz=100, chip=2)
 try:
 	i2c = board.I2C()  # uses board.SCL and board.SDA
 	pca = PCA9685(i2c)
@@ -26,12 +26,12 @@ except Exception as e:
 
 ###########################
 
-sio = socketio.AsyncServer(ping_interval=0.5, ping_timeout=1)
+sio = socketio.AsyncServer(ping_interval=0.1, ping_timeout=0.5)
 app = web.Application()
 sio.attach(app)
 
 # Initialize car instance
-car = Car(sio, pca, esc_pwm)
+car = Car(sio, pca, i2c)
 
 # Tasks
 stream_task = None
@@ -54,8 +54,7 @@ def disconnect(sid):
 		stream_task.cancel()
 	logger.warning(f'Disconnected: {sid}')
 	logger.critical('Shutting down Motor')
-	car.engine.stop()
-
+	# car.engine.stop()
 
 @sio.event
 async def get_config(sid, id):
@@ -76,19 +75,48 @@ async def set_config(sid, new_config):
 	logger.debug(f"Received new config: {new_config}")
 	config_data = ch.write_config(new_config)
 
+@sio.event
+async def set_control(sid, new_control):
+	"""
+	set updated control infos
+	"""
+	logger.debug(f"Received new config: {new_control}")
+	if new_control["steering-mode"] != None:
+		car.wheel.set_steering_mode(new_control["steering-mode"])
+	car.wheel.set_max_deflection(new_control["max-deflection"])
+	# car.engine.set_max_speed(new_control["max-speed"])
+
 # DATA STREAM
 async def stream_data():
 	"""
 	Stream back Car data to be displayed in the webclient
-	- All Channel Positions [16]
-	- Sensor Values [3]
-	- Steering Mode [1]
-	- cpu temps
 	"""
 	while True:
-		data = {"cpu_temp": await get_temp()} # example data
+		data = {
+			"selected-steering-mode": await car.wheel.get_steering_mode(),
+			"cpu_temp": await get_temp(),
+			"battery": {
+				"cell_1": await car.sensors.get_cell_1_voltage(), 
+				"cell_2": await car.sensors.get_cell_2_voltage()
+			},
+			"current": await car.sensors.get_current(),
+			# "engine": await car.engine.get_speed(),
+			"steering": {
+				"front": await car.wheel.get_angle_front(),
+				"rear": await car.wheel.get_angle_rear()
+			},
+			"float": {
+				"left": await car.float.get_float_left(),
+				"right": await car.float.get_float_right()
+			},
+			"arm": 123,
+			"magnet-state": "na",
+			"leds-state": "na",
+			"max-deflection": await car.wheel.get_max_deflection(),
+			# "max-speed": await car.engine.get_max_speed
+		}
 		await sio.emit("data_stream", data)
-		await asyncio.sleep(1)
+		await asyncio.sleep(0.3)
 
 async def get_temp():
 	try:
@@ -101,17 +129,6 @@ async def get_temp():
 		return float(result.stdout.strip()[5:9])
 	except Exception as e:
 		return e
-
-# @sio.on("update_config")
-# async def handle_get_config(sid, new_config):
-#     config_data = ch.write_config(new_config)
-#     print(f"Received config update {new_config}")
-
-# @sio.on("get_pwm_channel")
-# async def handle_get_config(sid, channel):
-#     config_data = ch.write_config(data)
-#     print(f"Received config update {data}")
-#     print(f"Updated Config: {config_data}")
 
 
 FRAME_RATE = 15

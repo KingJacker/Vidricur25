@@ -1,4 +1,4 @@
-# floats
+import asyncio
 from adafruit_motor import servo
 from loguru import logger
 
@@ -15,6 +15,8 @@ class Float():
         self.down_pos_right = 255
 
         self.state = None
+
+        self.set_float("up")
 
     def set_float(self, config):
         if config == "down":
@@ -34,6 +36,8 @@ class Float():
         self.servo_right.angle = self.down_pos_right
         self.state = "DOWN"
     
-    def get_float_state(self):
-        logger.debug(self.state)
-        return self.state
+    async def get_float_left(self):
+        return int(self.servo_left.angle)
+    
+    async def get_float_right(self):
+        return int(self.servo_right.angle)
