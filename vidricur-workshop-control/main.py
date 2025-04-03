@@ -7,16 +7,13 @@ from aiohttp import web
 import subprocess
 
 import board
-from adafruit_pca9685 import PCA9685
+from adafruit_pca9685 import PCA9685, PWMChannel
 
 from car.car import Car
 
 import car.config_handler as ch
 
 ####### Servo setup #######
-# On the Pi 5, use channels 0 and 1 to control GPIO_12 and GPIO_13, respectively; 
-# For Rpi 5, use chip=2
-# esc_pwm = HardwarePWM(pwm_channel=1, hz=100, chip=2)
 try:
 	i2c = board.I2C()  # uses board.SCL and board.SDA
 	pca = PCA9685(i2c)
@@ -84,7 +81,7 @@ async def set_control(sid, new_control):
 	if new_control["steering-mode"] != None:
 		car.wheel.set_steering_mode(new_control["steering-mode"])
 	car.wheel.set_max_deflection(new_control["max-deflection"])
-	# car.engine.set_max_speed(new_control["max-speed"])
+	car.engine.set_max_speed(new_control["max-speed"])
 
 # DATA STREAM
 async def stream_data():
@@ -100,7 +97,7 @@ async def stream_data():
 				"cell_2": await car.sensors.get_cell_2_voltage()
 			},
 			"current": await car.sensors.get_current(),
-			# "engine": await car.engine.get_speed(),
+			"engine": await car.engine.get_speed(),
 			"steering": {
 				"front": await car.wheel.get_angle_front(),
 				"rear": await car.wheel.get_angle_rear()
@@ -113,7 +110,7 @@ async def stream_data():
 			"magnet-state": "na",
 			"leds-state": "na",
 			"max-deflection": await car.wheel.get_max_deflection(),
-			# "max-speed": await car.engine.get_max_speed
+			"max-speed": await car.engine.get_max_speed()
 		}
 		await sio.emit("data_stream", data)
 		await asyncio.sleep(0.3)

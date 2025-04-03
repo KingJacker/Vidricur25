@@ -1,48 +1,38 @@
+import asyncio
 from loguru import logger
-
-### FREQ: 100hz
-
-# Duty Cycles
-MAX = 19
-MIN = 11
-HALT = 15
+from adafruit_pca9685 import PWMChannel
 
 class Engine():
-    pwm = None
+    def __init__(self, pca):
+        self.min = 1792 # 0x0700 # 1792
+        self.mid = 4992 # 0x1380 # 4992 (has to be exactly in the middle of min and max)
+        self.max = 8192 # 0x2000 # 8192
 
-    def __init__(self, pwm):
-        self.pwm = pwm
+        self.motor = PWMChannel(pca, 5) # index = 5 (channel)
+        self.motor.duty_cycle = self.mid # stop (initial motor value)
 
         self.max_speed = 0
-
-        self.pwm.start(HALT)
-        
         self.speed = 0
-
-        # set initial motor speed
-        self.initial_speed = 0
-        self.set_speed(self.initial_speed)
     
     def stop(self):
-        self.speed = 0
-        self.set_speed(self.speed)
+        self.set_speed(0)
         
-    # speed in percent -100 to 100
+    #! TYPE ISSUE
     def set_speed(self, speed): 
-        self.speed = speed
-        duty_cycle = self.map_range(self.speed, -100, 100, MIN, MAX)
-
-        # logger.info(f"Speed: {duty_cycle} ({self.speed})")
+        if speed > 0: # forward
+            self.speed = speed * self.max_speed # input speed * max speed to limit throttle
+        else: # reverse
+            self.speed = speed # reverse speed at full speed (is reduced by esc to 25%)
+        self.motor.duty_cycle = int(self.map_range(self.speed, -1, 1, self.min, self.max))
+        print(self.motor.duty_cycle)
         
-        self.pwm.change_duty_cycle(duty_cycle)
-        
-    def get_speed(self):
+    async def get_speed(self):
         return self.speed
 
     def set_max_speed(self, max_speed):
         self.max_speed = max_speed
 
-    def get_max_speed(self):
+    async def get_max_speed(self):
         return self.max_speed
 
     def map_range(self, value, input_min, input_max, output_min, output_max):
