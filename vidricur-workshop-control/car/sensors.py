@@ -17,11 +17,14 @@ class Sensors():
         return self.cell_2.value
 
     async def get_cell_1_voltage(self):
-        return self.cell_1.voltage
+        return self.cell_1.voltage - 0.084
     
     async def get_cell_2_voltage(self):
-        return self.cell_2.voltage
+        return self.cell_2.voltage -0.04
     
 
     async def get_current(self):
-        return (self.current_voltage.voltage - 2.5) / 0.04 # may need calibration
+        # print(f"Raw: {self.current_voltage.value} \n{(self.current_voltage.value - 65536/2)} \n{(self.current_voltage.value - 65536/2) * 5 / 65536}") # 16 bit ADC = 65535 
+        return self.current_voltage.voltage -2.5 / 0.04 + 60.448
+        # return (self.current_voltage.value - 510) * 5 / 1024 / 0.04 
+        # return (self.current_voltage.voltage - 2.5) / 0.04 # may need calibration
