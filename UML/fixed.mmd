@@ -1,0 +1,39 @@
+classDiagram
+  class Car {
+    engine
+    esc_pwm
+    max_angle : int
+    max_speed : int
+    servo_kit
+    sio
+    wheel
+    handleEvent(event)
+    send_message(message)
+    start()
+  }
+  class Engine {
+    duty_cycle : int
+    pwm : NoneType
+    speed : int
+    get_speed()
+    map_range(value, input_min, input_max, output_min, output_max)
+    set_speed(speed)
+    stop()
+  }
+  class Wheel {
+    angle_front : int
+    angle_rear : int
+    servo_front
+    servo_rear
+    steering_mode : str
+    get_angle()
+    get_steering_mode()
+    map_range(value, input_min, input_max, output_min, output_max)
+    set_angle_percent(perc)
+    set_steering_mode(steering_mode)
+  }
+  class main {
+  }
+  Car --> Wheel
+  Car --> Engine
+  main --> Car

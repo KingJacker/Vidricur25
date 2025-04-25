@@ -1,0 +1,43 @@
+import asyncio
+from adafruit_motor import servo
+from loguru import logger
+
+class Float():
+    def __init__(self, pca):
+
+        self.servo_left = servo.Servo(pca.channels[2], min_pulse=500, max_pulse = 2500, actuation_range=360)
+        self.servo_right = servo.Servo(pca.channels[3], min_pulse=500, max_pulse = 2500, actuation_range=360)
+
+        self.up_pos_left = 320
+        self.down_pos_left = 67
+
+        self.up_pos_right = 10
+        self.down_pos_right = 260
+
+        self.state = None
+
+        self.set_float("up")
+
+    def set_float(self, config):
+        if config == "down":
+            self.float_down()
+        elif config == "up":
+            self.float_up()
+        else:
+            logger.error("float not defined")
+    
+    def float_up(self):
+        self.servo_left.angle = self.up_pos_left
+        self.servo_right.angle = self.up_pos_right
+        self.state = "UP"
+
+    def float_down(self):
+        self.servo_left.angle = self.down_pos_left
+        self.servo_right.angle = self.down_pos_right
+        self.state = "DOWN"
+    
+    async def get_float_left(self):
+        return int(self.servo_left.angle)
+    
+    async def get_float_right(self):
+        return int(self.servo_right.angle)
