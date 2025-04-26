@@ -1,8 +1,10 @@
 import lgpio
 import asyncio
+import time
 
 LED_PINS = [5,6,22,27,23,24]
-
+LED_GREEN =  [5, 22, 23]
+LED_RED =  [6, 27, 24]
 
 # the leds used are on when pulled low!
 # 0 -> ON
@@ -24,19 +26,42 @@ class LEDS():
 		# self.magnet_green
 		# self.magnet_red
 
+		# set initial values
+		self.startup_sequence()
+
+
+		lgpio.gpio_write(self.h, self.status_red, 1) # start as disconnected
+
+
+	def startup_sequence(self):
 		# initialize gpios
 		lgpio.gpio_claim_output(self.h, self.status_red)
 		lgpio.gpio_claim_output(self.h, self.status_green)
 
-		# set initial values
-		lgpio.gpio_write(self.h, self.status_green, 0)
-		asyncio.run(asyncio.sleep(0.1))
+		# animation
 
-		lgpio.gpio_write(self.h, self.status_green, 1)
-		lgpio.gpio_write(self.h, self.status_red, 0)
-		asyncio.run(asyncio.sleep(0.1))
+		# OFF
+		for led in LED_PINS:
+			lgpio.gpio_write(self.h, led, 1) # LED Off
 
-		lgpio.gpio_write(self.h, self.status_red, 1)
+		# ALL GREEN
+		for led in LED_GREEN:
+			lgpio.gpio_write(self.h, led, 0)
+		time.sleep(0.5)
+
+		# OFF
+		for led in LED_PINS:
+			lgpio.gpio_write(self.h, led, 1) # LED Off
+
+		# ALL RED
+		for led in LED_RED:
+			lgpio.gpio_write(self.h, led, 0)
+		time.sleep(0.5)
+
+		# OFF
+		for led in LED_PINS:
+			lgpio.gpio_write(self.h, led, 1) # LED Off
+
 
 
 ### CONNECTION LEDS ### 
