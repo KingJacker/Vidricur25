@@ -60,3 +60,11 @@ class Car(metaclass=Singleton):
         else:
             self.wheel.set_angle(0)
 
+
+        # Float up / down
+        if command['e'] == 1 and command['q'] == 0:
+            await self.float.move(-1) # down
+        elif command['e'] == 0 and command['q'] == 1:
+            await self.float.move(1) # up
+        else:
+            pass
