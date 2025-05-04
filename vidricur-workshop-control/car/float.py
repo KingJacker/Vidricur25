@@ -10,8 +10,8 @@ MIN_DUTY =  500
 MAX_DUTY = 2500
 RANGE = 360
 
-DELAY = 0.01
-STEP = 20
+DELAY = 0.05
+STEP = 100
 
 class Float():
     def __init__(self, pca):
@@ -29,14 +29,6 @@ class Float():
         self.servo_right = sh.SLOW_SERVO(self.pca, CHANNEL_RIGHT, MIN_DUTY, MAX_DUTY, config[2], config[3], RANGE, DELAY, STEP)
 
 
-    # value: -1, 0, +1 to move down, stop, move up
-    # async def move(self, dir):
-    #     logger.info(f"Moving Float Servos: {dir}")
-    #     await self.servo_left.move_dir(dir, 67, 320)
-    #     await self.servo_right.move_dir(-1*dir, 10, 260)
-
-
-
     async def move(self):
         asyncio.create_task(self.servo_left.move())
         asyncio.create_task(self.servo_right.move())
@@ -44,7 +36,6 @@ class Float():
     def set_direction(self, direction):
         self.servo_left.set_direction(direction)
         self.servo_right.set_direction(-1*direction)
-
 
     
     async def get_float_left(self):

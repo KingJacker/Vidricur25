@@ -32,30 +32,7 @@ class SLOW_SERVO():
 		self.angle = self.get_angle()
 
 
-	# # moves to target angle
-	# async def move(self, angle):
-	# 	self.angle = angle
-	# 	self.target_us = self.map_range(self.angle, 0, self.range, self.min_duty, self.max_duty) # to micro seconds
-	# 	self.target_duty = int(self.target_us / 20000 * self.pca_resolution) # to actual pca duty
 
-	# 	while abs(self.target_duty - self.servo.duty_cycle) >= 15:
-	# 		current_duty = self.servo.duty_cycle
-			
-
-	# 		if self.target_duty > current_duty:
-	# 			self.servo.duty_cycle = current_duty + self.step
-	# 			await asyncio.sleep(self.delay)
-
-
-	# 		elif self.target_duty < current_duty:
-	# 			self.servo.duty_cycle = current_duty - self.step
-	# 			await asyncio.sleep(self.delay)
-
-	# 		else:
-	# 			print("target == current")
-	# 			self.servo.duty_cycle = self.target_duty
-
-	# 		print(current_duty, self.target_duty)
 
 	def set_direction(self, direction):
 		self.direction = direction
@@ -86,7 +63,6 @@ class SLOW_SERVO():
 				else:
 					await asyncio.sleep(0.5) # wait to check again if active
 				
-				logger.debug(self.direction)
 		except Exception as e:
 			logger.error(f"Error Moving Servo: {e}")
 
