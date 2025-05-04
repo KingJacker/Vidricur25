@@ -38,15 +38,26 @@ sio.attach(app)
 # Initialize car instance
 car = Car(sio, pca, i2c, leds)
 
+# servo_task = None
+# try:
+# 	servo_task = asyncio.create_task(car.start_servo_movers())
+# except Exception as e:
+# 	if servo_task:
+# 		servo_task.cancel()
+# 	logger.error(e)
+
 # Tasks
 stream_task = None
+# servo_task = None
 
 # If socketio connection is established the connect function is called
 @sio.event
 def connect(sid, environ):
 	global stream_task
+	# global servo_task
 	logger.success(f"Connected: {sid}")
 	stream_task = asyncio.create_task(stream_data())
+	# servo_task = asyncio.create_task(car.start_servo_movers())
 	leds.set_connected()
 
 
@@ -58,8 +69,11 @@ async def command(sid, command):
 @sio.event
 def disconnect(sid):
 	global stream_task
+	# global servo_task
 	if stream_task:
 		stream_task.cancel()
+	# if servo_task:
+	# 	servo_task.cancel()
 	logger.warning(f'Disconnected: {sid}')
 	logger.critical('Shutting down Motor')
 	car.engine.stop()
@@ -177,8 +191,20 @@ FRAME_RATE = 15
 # 	# Return the response with multipart MJPEG stream
 # 	return web.Response(body=frame_generator(), content_type="multipart/x-mixed-replace; boundary=frame")
 
+async def on_startup(app):
+	app['servo_task'] = asyncio.create_task(car.start_servo_movers())
 
+async def on_cleanup(app):
+	servo_task = app.get('servo_task')
+	if servo_task:
+		servo_task.cancel()
+		try:
+			await servo_task
+		except asyncio.CancelledError:
+			pass
 
+app.on_startup.append(on_startup)
+app.on_cleanup.append(on_cleanup)
 
 if __name__ == '__main__':
 	# app.router.add_get('/camera', stream_camera) # Register camera stream route

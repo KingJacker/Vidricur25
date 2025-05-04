@@ -5,6 +5,7 @@ from car.engine import Engine
 from car.wheel import Wheel
 from car.float import Float
 from car.sensors import Sensors
+import asyncio
 
 class Car(metaclass=Singleton):
     def __init__(self, sio, pca, i2c, leds):
@@ -38,7 +39,7 @@ class Car(metaclass=Singleton):
         await self.sio.emit("message", json.dumps(message))
 
     async def command_handler(self, command):
-        logger.debug(command)
+        # logger.debug(command)
 
         # STOP
         if command['space'] != 0:
@@ -63,8 +64,12 @@ class Car(metaclass=Singleton):
 
         # Float up / down
         if command['e'] == 1 and command['q'] == 0:
-            await self.float.move(-1) # down
+            self.float.set_direction(-1) # down
         elif command['e'] == 0 and command['q'] == 1:
-            await self.float.move(1) # up
+            self.float.set_direction(1) # up
         else:
-            pass
+            self.float.set_direction(0) # stop
+    
+    async def start_servo_movers(self):
+        logger.info("STARTING SERVO MOVERS (FLOATS)")
+        self.float_task = asyncio.create_task(self.float.move())
