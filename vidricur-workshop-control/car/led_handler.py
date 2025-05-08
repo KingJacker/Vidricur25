@@ -10,8 +10,8 @@ LED_RED =  [6, 27, 24]
 # 0 -> ON
 # 1 -> OFF
 class LEDS():
-	def __init__(self):
-		self.h = lgpio.gpiochip_open(4)
+	def __init__(self, gpio_handler):
+		self.h = gpio_handler
 
 		# Connection Status LEDS
 		self.status_red   = LED_PINS[3]

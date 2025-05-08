@@ -4,6 +4,7 @@ import json
 from loguru import logger
 from aiohttp import web
 import subprocess
+import lgpio
 
 
 import board
@@ -16,7 +17,9 @@ from car.led_handler import LEDS
 
 ######## LED Setup ########
 
-leds = LEDS()
+gpio_handler = lgpio.gpiochip_open(4)
+
+leds = LEDS(gpio_handler)
 leds.set_disconnected()
 
 ###########################
@@ -36,7 +39,7 @@ app = web.Application()
 sio.attach(app)
 
 # Initialize car instance
-car = Car(sio, pca, i2c, leds)
+car = Car(sio, pca, i2c, leds, gpio_handler)
 
 # servo_task = None
 # try:
