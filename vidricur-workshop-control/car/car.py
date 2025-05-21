@@ -6,6 +6,7 @@ from car.wheel import Wheel
 from car.float import Float
 from car.sensors import Sensors
 from car.arm import Arm
+from car.magnet import Magnet
 import asyncio
 
 class Car(metaclass=Singleton):
@@ -39,6 +40,13 @@ class Car(metaclass=Singleton):
 
 		# ARM
 		self.arm = Arm(self.pca, self.gpio_handler)
+
+		# DRONE MOTORS
+		# self.drone_motor_left = DroneMotor(self.pca, 0)
+		# self.drone_motor_right = DroneMotor(self.pca, 1)
+
+		# MAGNET
+		self.magnet = Magnet(self.gpio_handler)
 
 	async def send_message(self, message): #? is this obsolete
 		await self.sio.emit("message", json.dumps(message))
@@ -85,6 +93,14 @@ class Car(metaclass=Singleton):
 		else:
 			self.arm.set_direction(0)
 			self.arm.stop()
+
+		# MAGNET 
+		if command['u'] == 1 and command['j'] == 0:
+			self.magnet.set_magnet_inactive()
+		elif command['j'] == 1 and command['u'] == 0:
+			self.magnet.set_magnet_active()
+		else:
+			pass
 
 	
 	async def start_servo_movers(self):

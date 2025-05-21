@@ -136,7 +136,7 @@ async def stream_data():
 				"right": await car.float.get_float_right()
 			},
 			"arm": 123,
-			"magnet-state": "na",
+			"magnet-state": car.magnet.get_magnet_active(),
 			"leds-state": "na",
 			"max-deflection": await car.wheel.get_max_deflection(),
 			"max-speed": await car.engine.get_max_speed()
