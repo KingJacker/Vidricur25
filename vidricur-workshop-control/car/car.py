@@ -117,24 +117,23 @@ class Car(metaclass=Singleton):
 		# ...
 
 		# QUERSTRAHLER
-		if command['w'] > 0 and command['s'] == 0 and command['p'] == 1:
-			self.querstrahler.set_forward()
-			self.querstrahler.move(command['w'])
-		elif command['s'] > 0 and command['w'] == 0 and command['p'] == 1:
-			self.querstrahler.set_backward()
-			self.querstrahler.move(command['s'])
+		if command['p'] == 1:
+			if command['w'] > 0 and command['s'] == 0:
+				self.querstrahler.set_forward()
+				self.querstrahler.move(command['w'])
+			elif command['s'] > 0 and command['w'] == 0:
+				self.querstrahler.set_backward()
+				self.querstrahler.move(command['s'])
+			elif command['a'] > 0 and command['d'] == 0:
+				self.querstrahler.set_left()
+				self.querstrahler.move(command['a'])
+			elif command['d'] > 0 and command['a'] == 0:
+				self.querstrahler.set_right()
+				self.querstrahler.move(command['d'])
+			else:
+				self.querstrahler.stop()
 		else:
 			self.querstrahler.stop()
-
-		if command['a'] > 0 and command['d'] == 0 and command['p'] == 1:
-			self.querstrahler.set_left()
-			self.querstrahler.move(command['a'])
-		elif command['d'] > 0 and command['a'] == 0 and command['p'] == 1:
-			self.querstrahler.set_right()
-			self.querstrahler.move(command['d'])
-		else:
-			self.querstrahler.stop()
-
 	
 	async def start_servo_movers(self):
 		logger.info("STARTING SERVO MOVERS (FLOATS)")

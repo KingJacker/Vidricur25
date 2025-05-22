@@ -81,6 +81,7 @@ def disconnect(sid):
 	logger.critical('Shutting down Motor')
 	car.engine.stop()
 	leds.set_disconnected()
+	car.querstrahler.stop()
 
 @sio.event
 async def get_config(sid, id):
