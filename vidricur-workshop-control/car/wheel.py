@@ -37,7 +37,7 @@ class Wheel():
         self.angle_front = self.deflection + self.servo_center
         self.angle_rear  = - self.deflection + self.servo_center 
 
-        logger.info(f"Set Angle FRONT: {self.angle_front} REAR: {self.angle_rear} DEFL:{self.deflection}")
+        # logger.info(f"Set Angle FRONT: {self.angle_front} REAR: {self.angle_rear} DEFL:{self.deflection}")
 
         if self.steering_mode == 'front':
             self.servo_front.angle = self.angle_front
@@ -50,7 +50,7 @@ class Wheel():
             self.servo_rear.angle = self.angle_rear
             self.leds.set_steering_both()
         else:
-            logger.error("No Steering Mode provided!")
+            # logger.error("No Steering Mode provided!")
             self.leds.set_steering_none()
 
     async def get_angle_front(self):
@@ -66,7 +66,7 @@ class Wheel():
         return self.steering_mode
 
     def set_max_deflection(self, max_deflection):
-        logger.debug(f"Set Max Deflection: {max_deflection}")
+        # logger.debug(f"Set Max Deflection: {max_deflection}")
         self.max_deflection = int(max_deflection)
 
     async def get_max_deflection(self):

@@ -41,6 +41,6 @@ class Arm():
 		self.arm_motor.duty_cycle = self.speed
 		
 	def stop(self):
-		logger.debug(f"Stopped arm")
+		# logger.debug(f"Stopped arm")
 		self.arm_motor.duty_cycle = 0
 	

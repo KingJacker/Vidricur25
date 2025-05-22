@@ -7,6 +7,7 @@ from car.float import Float
 from car.sensors import Sensors
 from car.arm import Arm
 from car.magnet import Magnet
+from car.querstrahler import Querstrahler
 import asyncio
 
 class Car(metaclass=Singleton):
@@ -48,6 +49,9 @@ class Car(metaclass=Singleton):
 		# MAGNET
 		self.magnet = Magnet(self.gpio_handler)
 
+		# QUERSTRAHLER
+		self.querstrahler = Querstrahler(self.pca, self.gpio_handler)
+
 	async def send_message(self, message): #? is this obsolete
 		await self.sio.emit("message", json.dumps(message))
 
@@ -59,9 +63,9 @@ class Car(metaclass=Singleton):
 			self.engine.stop()
 		
 		# FORWARD / BACKWARD
-		if command['w'] > 0 and command['s'] == 0:
+		if command['w'] > 0 and command['s'] == 0 and command['p'] == 0:
 			self.engine.set_speed(command['w'])
-		elif command['s'] > 0 and command['w'] == 0:
+		elif command['s'] > 0 and command['w'] == 0 and command['p'] == 0:
 			self.engine.set_speed(-1 * command['s']) # reverse with * -1
 		else:
 			self.engine.set_speed(0)
@@ -102,7 +106,37 @@ class Car(metaclass=Singleton):
 		else:
 			pass
 
+		# CAMERA Front
+			# pan
+		# if command[] == 1 and command[] == 0 and command['y'] == 1:
+		# 	self.cameras.pan_left
+
+			# tilt
+
+		# CAMERA Rear
+		# ...
+
+		# QUERSTRAHLER
+		if command['w'] > 0 and command['s'] == 0 and command['p'] == 1:
+			self.querstrahler.set_forward()
+			self.querstrahler.move(command['w'])
+		elif command['s'] > 0 and command['w'] == 0 and command['p'] == 1:
+			self.querstrahler.set_backward()
+			self.querstrahler.move(command['s'])
+		else:
+			self.querstrahler.stop()
+
+		if command['a'] > 0 and command['d'] == 0 and command['p'] == 1:
+			self.querstrahler.set_left()
+			self.querstrahler.move(command['a'])
+		elif command['d'] > 0 and command['a'] == 0 and command['p'] == 1:
+			self.querstrahler.set_right()
+			self.querstrahler.move(command['d'])
+		else:
+			self.querstrahler.stop()
+
 	
 	async def start_servo_movers(self):
 		logger.info("STARTING SERVO MOVERS (FLOATS)")
 		self.float_task = asyncio.create_task(self.float.move())
+		# camera servos
