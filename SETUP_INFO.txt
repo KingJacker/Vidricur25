@@ -1,0 +1,1 @@
+sudo apt install python3.11-dev # necessarry for adafruit-circuitpython-pca9685

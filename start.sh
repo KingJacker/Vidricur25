@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# activate venv 
-#! NOT WORKING
-source "venv/bin/activate.csh"
+echo "\n    STARTING AMPHIBIOTECH FIRMWARE\n" 
 
-# run main.py
-sudo -E env "PATH=$PATH" python "vidricur-workshop-control/main.py"
+~/Vidricur25/venv/bin/python ~/Vidricur25/vidricur-workshop-control/main.py 
