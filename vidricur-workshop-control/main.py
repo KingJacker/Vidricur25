@@ -6,6 +6,7 @@ from aiohttp import web
 import subprocess
 import lgpio
 
+from datalogger import NDJsonLogger
 
 import board
 from adafruit_pca9685 import PCA9685, PWMChannel
@@ -28,6 +29,9 @@ print("""
 .    Starting Vehicle...
 .
 """)
+
+####### Data Logger #######
+dataLogger = NDJsonLogger()
 
 ######## LED Setup ########
 
@@ -56,17 +60,12 @@ sio.attach(app)
 # Initialize car instance
 car = Car(sio, pca, i2c, leds, gpio_handler)
 
-# servo_task = None
-# try:
-# 	servo_task = asyncio.create_task(car.start_servo_movers())
-# except Exception as e:
-# 	if servo_task:
-# 		servo_task.cancel()
-# 	logger.error(e)
 
 # Tasks
 stream_task = None
-# servo_task = None
+
+# Connection state
+isConnected = False
 
 # If socketio connection is established the connect function is called
 @sio.event
@@ -77,6 +76,7 @@ def connect(sid, environ):
 	stream_task = asyncio.create_task(stream_data())
 	# servo_task = asyncio.create_task(car.start_servo_movers())
 	leds.set_connected()
+	isConnected = True
 
 
 @sio.event
@@ -97,6 +97,7 @@ def disconnect(sid):
 	car.engine.stop()
 	leds.set_disconnected()
 	car.querstrahler.stop()
+	isConnected = False
 
 @sio.event
 async def get_config(sid, id):
@@ -160,6 +161,38 @@ async def stream_data():
 		await sio.emit("data_stream", data)
 		await asyncio.sleep(0.3)
 
+async def log_data():
+	"""
+	Stream back Car data to be displayed in the webclient
+	"""
+	while True:
+		data = {
+			"isConnected": isConnected,
+			"selected-steering-mode": await car.wheel.get_steering_mode(),
+			"cpu_temp": await get_temp(),
+			"battery": {
+				"cell_1": await car.sensors.get_cell_1_voltage(), 
+				"cell_2": await car.sensors.get_cell_2_voltage()
+			},
+			"current": await car.sensors.get_current(),
+			"engine": await car.engine.get_speed(),
+			"steering": {
+				"front": await car.wheel.get_angle_front(),
+				"rear": await car.wheel.get_angle_rear()
+			},
+			"float": {
+				"left": await car.float.get_float_left(),
+				"right": await car.float.get_float_right()
+			},
+			"arm": 123,
+			"magnet-state": car.magnet.get_magnet_active(),
+			"leds-state": "na",
+			"max-deflection": await car.wheel.get_max_deflection(),
+			"max-speed": await car.engine.get_max_speed()
+		}
+		dataLogger.log_data(data)
+		await asyncio.sleep(0.3)
+
 async def get_temp():
 	try:
 		result = subprocess.run(
@@ -173,45 +206,9 @@ async def get_temp():
 		return e
 
 
-FRAME_RATE = 15
-
-# Camera Stream Handler
-# async def stream_camera(request):
-# 	# Command to stream using libcamera-vid over stdout
-# 	cmd = [
-# 		"libcamera-vid", "-t", "0", "--inline", "--codec", "mjpeg",
-# 		"--framerate", f"{FRAME_RATE}", "-o", "-"
-# 	]
-# 	# Start camera process
-# 	proc = await asyncio.create_subprocess_exec(*cmd, stdout=asyncio.subprocess.PIPE#, stderr=asyncio.subprocess.DEVNULL
-# 	)
-
-# 	# Stream frames in MJPEG format
-# 	async def frame_generator():
-# 		buffer = b""
-# 		try:
-# 			while True:
-# 				chunk = await proc.stdout.read(4096)  # Increased chunk size
-# 				if not chunk:
-# 					break
-# 				buffer += chunk
-# 				# Look for frame boundaries
-# 				while b'\xff\xd9' in buffer:  # JPEG EOF marker
-# 					frame_end = buffer.index(b'\xff\xd9') + 2
-# 					frame = buffer[:frame_end]
-# 					buffer = buffer[frame_end:]
-# 					yield (b"--frame\r\n"
-# 						   b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
-# 		except asyncio.CancelledError:
-# 			pass
-# 		finally:
-# 			proc.kill()
-
-# 	# Return the response with multipart MJPEG stream
-# 	return web.Response(body=frame_generator(), content_type="multipart/x-mixed-replace; boundary=frame")
-
 async def on_startup(app):
 	app['servo_task'] = asyncio.create_task(car.start_servo_movers())
+	app['logger_task'] = asyncio.create_task(log_data())
 
 async def on_cleanup(app):
 	servo_task = app.get('servo_task')
