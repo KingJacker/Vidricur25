@@ -5,6 +5,7 @@ from loguru import logger
 from aiohttp import web
 import subprocess
 import lgpio
+import datetime
 
 from datalogger import NDJsonLogger
 
@@ -138,22 +139,17 @@ async def stream_data():
 	"""
 	while True:
 		data = {
+			"timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
 			"selected-steering-mode": await car.wheel.get_steering_mode(),
 			"cpu_temp": await get_temp(),
-			"battery": {
-				"cell_1": await car.sensors.get_cell_1_voltage(), 
-				"cell_2": await car.sensors.get_cell_2_voltage()
-			},
+			"cell_1": await car.sensors.get_cell_1_voltage(), 
+			"cell_2": await car.sensors.get_cell_2_voltage(),
 			"current": await car.sensors.get_current(),
 			"engine": await car.engine.get_speed(),
-			"steering": {
-				"front": await car.wheel.get_angle_front(),
-				"rear": await car.wheel.get_angle_rear()
-			},
-			"float": {
-				"left": await car.float.get_float_left(),
-				"right": await car.float.get_float_right()
-			},
+			"steering-front": await car.wheel.get_angle_front(),
+			"steering-rear": await car.wheel.get_angle_rear(),
+			"float-left": await car.float.get_float_left(),
+			"float-right": await car.float.get_float_right(),
 			"arm": 123,
 			"magnet-state": car.magnet.get_magnet_active(),
 			"leds-state": "na",
@@ -169,6 +165,7 @@ async def log_data():
 	"""
 	while True:
 		data = {
+			"timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
 			"isConnected": isConnected,
 			"selected-steering-mode": await car.wheel.get_steering_mode(),
 			"cpu_temp": await get_temp(),
