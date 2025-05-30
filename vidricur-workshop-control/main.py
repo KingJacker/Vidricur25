@@ -142,9 +142,13 @@ async def stream_data():
 			"timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
 			"selected-steering-mode": await car.wheel.get_steering_mode(),
 			"cpu_temp": await get_temp(),
-			"cell_1": await car.sensors.get_cell_1_voltage(), 
-			"cell_2": await car.sensors.get_cell_2_voltage(),
-			"current": await car.sensors.get_current(),
+			# "adc1": await car.sensors.get_adc1_voltage(),
+			# "adc2": await car.sensors.get_adc2_voltage(),
+			# "adc3": await car.sensors.get_adc3_voltage(),
+			# "adc4": await car.sensors.get_adc4_voltage(),
+			"cell_1": await car.sensors.get_adc1_voltage(),
+			"cell_2": await car.sensors.get_adc2_voltage(),
+			"current": await car.sensors.get_adc4_voltage(),
 			"engine": await car.engine.get_speed(),
 			"steering-front": await car.wheel.get_angle_front(),
 			"steering-rear": await car.wheel.get_angle_rear(),
@@ -156,8 +160,9 @@ async def stream_data():
 			"max-deflection": await car.wheel.get_max_deflection(),
 			"max-speed": await car.engine.get_max_speed()
 		}
+		dataLogger.log_data(data)
 		await sio.emit("data_stream", data)
-		await asyncio.sleep(0.3)
+		await asyncio.sleep(1)
 
 async def log_data():
 	"""
@@ -166,30 +171,27 @@ async def log_data():
 	while True:
 		data = {
 			"timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-			"isConnected": isConnected,
 			"selected-steering-mode": await car.wheel.get_steering_mode(),
 			"cpu_temp": await get_temp(),
-			"battery": {
-				"cell_1": await car.sensors.get_cell_1_voltage(), 
-				"cell_2": await car.sensors.get_cell_2_voltage()
-			},
-			"current": await car.sensors.get_current(),
+			# "adc1": await car.sensors.get_adc1_voltage(),
+			# "adc2": await car.sensors.get_adc2_voltage(),
+			# "adc3": await car.sensors.get_adc3_voltage(),
+			# "adc4": await car.sensors.get_adc4_voltage(),
+			"cell_1": await car.sensors.get_adc1_voltage(),
+			"cell_2": await car.sensors.get_adc2_voltage(),
+			"current": await car.sensors.get_adc4_voltage(),
 			"engine": await car.engine.get_speed(),
-			"steering": {
-				"front": await car.wheel.get_angle_front(),
-				"rear": await car.wheel.get_angle_rear()
-			},
-			"float": {
-				"left": await car.float.get_float_left(),
-				"right": await car.float.get_float_right()
-			},
+			"steering-front": await car.wheel.get_angle_front(),
+			"steering-rear": await car.wheel.get_angle_rear(),
+			"float-left": await car.float.get_float_left(),
+			"float-right": await car.float.get_float_right(),
 			"arm": 123,
 			"magnet-state": car.magnet.get_magnet_active(),
 			"leds-state": "na",
 			"max-deflection": await car.wheel.get_max_deflection(),
 			"max-speed": await car.engine.get_max_speed()
 		}
-		dataLogger.log_data(data)
+		# dataLogger.log_data(data)
 		await asyncio.sleep(0.3)
 
 async def get_temp():
