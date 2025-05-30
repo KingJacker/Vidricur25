@@ -24,7 +24,7 @@ class Engine():
         if speed > 0: # forward
             self.speed = speed * (self.max_speed / 100) # input speed * max speed to limit throttle
         else: # reverse
-            self.speed = speed # reverse speed at full speed (is reduced by esc to 25%)
+            self.speed = speed * 0.15 # reverse speed at half speed (is reduced by esc to 25%)
         self.motor.duty_cycle = int(self.map_range(self.speed, -1, 1, self.min, self.max))
         print(self.motor.duty_cycle)
         
