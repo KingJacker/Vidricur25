@@ -22,29 +22,35 @@ class Car(metaclass=Singleton):
 		try:
 			self.sensors = Sensors(i2c)
 		except Exception as e:
-			logger.warning(f'Could not get Sensor: {e}')
+			logger.warning(f'Could not Instantiate Sensor: {e}')
 		
 		# ENGINE
-		self.engine = Engine(self.pca)
-		
+		try:
+			self.engine = Engine(self.pca)
+		except Exception as e:
+			logger.critical(f'Could not Instantiate Engine: {e}')
+			exit(1)
+
 		# WHEEL
 		try:
 			self.wheel = Wheel(self.pca, self.leds)
 		except Exception as e:
-			logger.critical(f'Could not Instantiate: {e}')
+			logger.critical(f'Could not Instantiate Wheel: {e}')
+			exit(1)
 
 		# FLOAT
 		try: 
 			self.float = Float(self.pca)
 		except Exception as e:
 			logger.critical(f'Could not instantiate Float: {e}')
+			exit(1)
 
 		# ARM
-		self.arm = Arm(self.pca, self.gpio_handler)
-
-		# DRONE MOTORS
-		# self.drone_motor_left = DroneMotor(self.pca, 0)
-		# self.drone_motor_right = DroneMotor(self.pca, 1)
+		try:
+			self.arm = Arm(self.pca, self.gpio_handler)
+		except Exception as e:
+			logger.critical(f'Could not Instantiate Arm: {e}')
+			exit(1)
 
 		# MAGNET
 		self.magnet = Magnet(self.gpio_handler)
