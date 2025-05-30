@@ -1,6 +1,7 @@
 import asyncio
 from loguru import logger
 from adafruit_motor import servo
+import car.config_handler as ch
 
 class Wheel():
     def __init__(self, pca, leds):
@@ -17,25 +18,28 @@ class Wheel():
         self.servo_rear  = servo.Servo(self.pca.channels[1], min_pulse=self.min_pulse, max_pulse = self.max_pulse, actuation_range=self.servo_range)
 
         # centered position
-        self.servo_center = int(self.servo_range / 2)
+        # self.servo_center = int(self.servo_range / 2)
+        steering_config = ch.get_steering_config()
+        logger.debug(steering_config)
+        self.servo_center_front = steering_config[0]
+        self.servo_center_rear  = steering_config[1]
 
-        self.max_deflection = 0
+        self.max_deflection = steering_config[2]
 
         self.angle_front = 0
         self.angle_rear = 0
         self.steering_mode = 'front-steering'
 
         # set initial servo position
-        self.initial_angle = self.servo_center
-        self.servo_front.angle = self.initial_angle
-        self.servo_rear.angle  = self.initial_angle
+        self.servo_front.angle = self.servo_center_front
+        self.servo_rear.angle  = self.servo_center_rear
 
 
     def set_angle(self, value):
         self.deflection = self.max_deflection * value
 
-        self.angle_front = self.deflection + self.servo_center
-        self.angle_rear  = - self.deflection + self.servo_center 
+        self.angle_front = self.deflection + self.servo_center_front
+        self.angle_rear  = - self.deflection + self.servo_center_rear
 
         # logger.info(f"Set Angle FRONT: {self.angle_front} REAR: {self.angle_rear} DEFL:{self.deflection}")
 
