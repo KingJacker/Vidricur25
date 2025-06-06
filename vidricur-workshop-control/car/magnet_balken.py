@@ -15,7 +15,7 @@ class MagnetBalken():
 		# positions	
 		self.down = 0
 		self.mid = 90
-		self.up = 180
+		self.up = 155
 
 		self.initial = self.mid
 
