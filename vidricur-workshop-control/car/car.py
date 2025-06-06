@@ -119,6 +119,15 @@ class Car(metaclass=Singleton):
 		else:
 			self.camera_servos.set_direction_rear(0) # stop
 
+
+		# Camera Front
+		if command['t'] == 1 and command['g'] == 0:
+			self.camera_servos.set_direction_front(-1) # down
+		elif command['t'] == 0 and command['g'] == 1:
+			self.camera_servos.set_direction_front(1) # up
+		else:
+			self.camera_servos.set_direction_front(0) # stop
+
 		# Schwenkarm
 		if command['f'] == 1 and command['r'] == 0:
 			self.arm.set_direction(1)
