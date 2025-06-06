@@ -56,7 +56,8 @@ except Exception as e:
 
 ###########################
 
-sio = socketio.AsyncServer(ping_interval=0.1, ping_timeout=0.3)
+# sio = socketio.AsyncServer(logger=False, engineio_logger=True, ping_interval=0.1, ping_timeout=0.5)
+sio = socketio.AsyncServer(logger=False, engineio_logger=False, ping_interval=0.1, ping_timeout=0.5)
 app = web.Application()
 sio.attach(app)
 
@@ -98,6 +99,7 @@ def disconnect(sid):
 	logger.warning(f'Disconnected: {sid}')
 	logger.critical('Shutting down Motor')
 	car.engine.stop()
+	car.arm.stop()
 	leds.set_disconnected()
 	car.querstrahler.stop()
 	isConnected = False
@@ -131,12 +133,21 @@ async def set_control(sid, new_control):
 		car.wheel.set_steering_mode(new_control["steering-mode"])
 	car.wheel.set_max_deflection(new_control["max-deflection"])
 	car.engine.set_max_speed(new_control["max-speed"])
+	
+	if new_control["lights"]:
+		car.leds.enable_light()
+	else:
+		car.leds.disable_light()
+
+	car.magnet_balken.set_pos(new_control["magnet-balken-pos"])
+
 
 # DATA STREAM
 async def stream_data():
 	"""
 	Stream back Car data to be displayed in the webclient
 	"""
+	logger.info("Running Data Stream")
 	while True:
 		data = {
 			"timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -154,15 +165,16 @@ async def stream_data():
 			"steering-rear": await car.wheel.get_angle_rear(),
 			"float-left": await car.float.get_float_left(),
 			"float-right": await car.float.get_float_right(),
-			"arm": 123,
+			"arm": await car.arm.get_pos(),
 			"magnet-state": car.magnet.get_magnet_active(),
-			"leds-state": "na",
+			"leds-state": car.leds.get_light_status(),
 			"max-deflection": await car.wheel.get_max_deflection(),
-			"max-speed": await car.engine.get_max_speed()
+			"max-speed": await car.engine.get_max_speed(),
+			"magnet-balken-pos": car.magnet_balken.get_pos()
 		}
 		dataLogger.log_data(data)
 		await sio.emit("data_stream", data)
-		await asyncio.sleep(1)
+		await asyncio.sleep(0.3)
 
 async def log_data():
 	"""

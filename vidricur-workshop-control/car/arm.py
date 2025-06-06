@@ -44,3 +44,5 @@ class Arm():
 		# logger.debug(f"Stopped arm")
 		self.arm_motor.duty_cycle = 0
 	
+	async def get_pos(self):
+		return "None"

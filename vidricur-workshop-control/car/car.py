@@ -8,6 +8,7 @@ from car.sensors import Sensors
 from car.arm import Arm
 from car.magnet import Magnet
 from car.querstrahler import Querstrahler
+from car.magnet_balken import MagnetBalken
 import asyncio
 
 class Car(metaclass=Singleton):
@@ -52,6 +53,13 @@ class Car(metaclass=Singleton):
 			logger.critical(f'Could not Instantiate Arm: {e}')
 			exit(1)
 
+		# magnet balken
+		try: 
+			self.magnet_balken = MagnetBalken(self.pca)
+		except Exception as e:
+			logger.critical(f'Could not Instantiate Magnet Balken: {e}')
+			exit(1)
+
 		# MAGNET
 		self.magnet = Magnet(self.gpio_handler)
 
@@ -60,6 +68,8 @@ class Car(metaclass=Singleton):
 
 	async def send_message(self, message): #? is this obsolete
 		await self.sio.emit("message", json.dumps(message))
+
+
 
 	async def command_handler(self, command):
 		# logger.debug(command)

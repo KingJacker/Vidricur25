@@ -58,10 +58,10 @@ class Wheel():
             self.leds.set_steering_none()
 
     async def get_angle_front(self):
-        return int(self.servo_front.angle)
+        return int(self.servo_front.angle - self.servo_center_front)
     
     async def get_angle_rear(self):
-        return int(self.servo_rear.angle)
+        return int(self.servo_rear.angle - self.servo_center_rear)
     
     def set_steering_mode(self, steering_mode):
         self.steering_mode = steering_mode
