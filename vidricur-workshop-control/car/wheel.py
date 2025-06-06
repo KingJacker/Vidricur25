@@ -53,6 +53,9 @@ class Wheel():
             self.servo_front.angle = self.angle_front
             self.servo_rear.angle = self.angle_rear
             self.leds.set_steering_both()
+        elif self.steering_mode == 'skew':
+            self.servo_front.angle = self.angle_front
+            self.servo_rear.angle = self.angle_front
         else:
             # logger.error("No Steering Mode provided!")
             self.leds.set_steering_none()

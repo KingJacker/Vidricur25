@@ -9,6 +9,7 @@ from car.arm import Arm
 from car.magnet import Magnet
 from car.querstrahler import Querstrahler
 from car.magnet_balken import MagnetBalken
+from car.camera_servos import CameraServos
 import asyncio
 
 class Car(metaclass=Singleton):
@@ -60,6 +61,13 @@ class Car(metaclass=Singleton):
 			logger.critical(f'Could not Instantiate Magnet Balken: {e}')
 			exit(1)
 
+		# CameraServos
+		try: 
+			self.camera_servos = CameraServos(self.pca)
+		except Exception as e:
+			logger.critical(f'Could not Instantiate Camera Servos: {e}')
+			exit(1)
+
 		# MAGNET
 		self.magnet = Magnet(self.gpio_handler)
 
@@ -103,6 +111,14 @@ class Car(metaclass=Singleton):
 		else:
 			self.float.set_direction(0) # stop
 
+		# Camera Rear
+		if command['n'] == 1 and command['m'] == 0:
+			self.camera_servos.set_direction_rear(-1) # down
+		elif command['n'] == 0 and command['m'] == 1:
+			self.camera_servos.set_direction_rear(1) # up
+		else:
+			self.camera_servos.set_direction_rear(0) # stop
+
 		# Schwenkarm
 		if command['f'] == 1 and command['r'] == 0:
 			self.arm.set_direction(1)
@@ -121,16 +137,6 @@ class Car(metaclass=Singleton):
 			self.magnet.set_magnet_active()
 		else:
 			pass
-
-		# CAMERA Front
-			# pan
-		# if command[] == 1 and command[] == 0 and command['y'] == 1:
-		# 	self.cameras.pan_left
-
-			# tilt
-
-		# CAMERA Rear
-		# ...
 
 		# QUERSTRAHLER
 		if command['p'] == 1:
@@ -152,6 +158,7 @@ class Car(metaclass=Singleton):
 			self.querstrahler.stop()
 	
 	async def start_servo_movers(self):
-		logger.info("STARTING SERVO MOVERS (FLOATS)")
+		logger.info("STARTING SERVO MOVERS")
 		self.float_task = asyncio.create_task(self.float.move())
+		self.camera_task = asyncio.create_task(self.camera_servos.move())
 		# camera servos

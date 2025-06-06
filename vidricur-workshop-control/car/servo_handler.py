@@ -59,7 +59,9 @@ class SLOW_SERVO():
 						await asyncio.sleep(self.delay)
 					else:
 						logger.debug(f"Float Servo {self.channel} at limit")
+						await asyncio.sleep(0.5)
 					logger.debug(f"MOVING({self.channel}): {self.direction}")
+					
 				else:
 					await asyncio.sleep(0.5) # wait to check again if active
 				
