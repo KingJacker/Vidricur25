@@ -129,13 +129,13 @@ class Car(metaclass=Singleton):
 			self.camera_servos.set_direction_front(0) # stop
 
 		# Schwenkarm
-		if command['f'] == 1 and command['r'] == 0:
+		if command['f'] == 1 and command['r'] == 0 and self.arm.is_homed:
 			self.arm.set_direction(1)
 			self.arm.move()
-		elif command['r'] == 1 and command['f'] == 0:
+		elif command['r'] == 1 and command['f'] == 0 and self.arm.is_homed:
 			self.arm.set_direction(0) # reverse with * -1
 			self.arm.move()
-		else:
+		elif self.arm.is_homed:
 			self.arm.set_direction(0)
 			self.arm.stop()
 
@@ -168,6 +168,7 @@ class Car(metaclass=Singleton):
 	
 	async def start_servo_movers(self):
 		logger.info("STARTING SERVO MOVERS")
+		self.home_task = asyncio.create_task(self.arm.home())
 		self.float_task = asyncio.create_task(self.float.move())
 		self.camera_task = asyncio.create_task(self.camera_servos.move())
 		# camera servos

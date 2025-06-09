@@ -37,6 +37,10 @@ class LEDS():
 
 		lgpio.gpio_write(self.h, self.status_red, 1) # start as disconnected
 
+	def free_leds(self):
+		lgpio.gpio_free(self.h, self.status_red)
+		lgpio.gpio_free(self.h, self.status_green)
+		lgpio.gpio_free(self.h, self.light)
 
 	def startup_sequence(self):
 		# initialize gpios

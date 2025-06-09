@@ -8,7 +8,7 @@ class SLOW_SERVO():
 	def __init__(self, pca, channel, min_duty, max_duty, min_angle, max_angle, range, delay, step):
 		self.pca = pca
 		self.channel = channel
-		self.min_duty = min_duty # actually us
+		self.min_duty = min_duty # actually us (microseconds of pwm)
 		self.max_duty = max_duty # --//--
 		self.range = range
 		self.delay = delay
@@ -60,7 +60,7 @@ class SLOW_SERVO():
 					else:
 						logger.debug(f"Float Servo {self.channel} at limit")
 						await asyncio.sleep(0.5)
-					logger.debug(f"MOVING({self.channel}): {self.direction}")
+					logger.debug(f"MOVING({self.channel}): {self.direction}, Current Angle:{int(self.get_angle())}")
 					
 				else:
 					await asyncio.sleep(0.5) # wait to check again if active

@@ -2,33 +2,51 @@ from loguru import logger
 from adafruit_pca9685 import PWMChannel
 import asyncio
 import lgpio
+import time
 
 class Arm():
 	def __init__(self, pca, gpio_handler): #supply gpio_handler!
 		self.pca = pca
 		self.speed = int(65536 * 0.75)
+		self.homing_speed = int(65536 * 0.25)
 		self.direction = 0
 		self.arm_motor = PWMChannel(pca, 15)
 		self.gpio_handler = gpio_handler
 		self.motor_pin = 16
-		# self.endstop_pin = None # TODO: add home pin
-		# self.homing = False
+		self.endstop_pin = 13
+		self.homing = False
+		self.is_homed = False
+		self.stopping = False
 
 		lgpio.gpio_claim_output(self.gpio_handler, self.motor_pin)
-		# lgpio.gpio_claim_output(self.gpio_handler, self.endstop_pin)
+		lgpio.gpio_claim_output(self.gpio_handler, self.endstop_pin, lgpio.SET_PULL_UP)
 
+		
 	
-	# Homing Sequence
-	# def home(self):
-	# 	logger.debug("Homing arm")
-	# 	self.homing = True
-	# 	if self.endstop_pin:
-	# 		# stop
-	# 	else:
-	# 		# set direction towards endstop
-	# 		# move 
 
-	
+	def free_pins(self):
+		lgpio.gpio_free(self.gpio_handler, self.motor_pin)
+		lgpio.gpio_free(self.gpio_handler, self.endstop_pin)
+
+	#Homing Sequence
+	async def home(self):
+		self.homing = True
+		while self.homing and not self.stopping:
+			logger.debug("Arm Homing")
+			endstop = lgpio.gpio_read(self.gpio_handler, self.endstop_pin)
+			logger.debug(endstop)
+			if endstop == 0: # 0 is pressed
+				logger.debug("Arm hit Endstop")
+				self.stop()
+				logger.debug("Arm Homed")
+				self.is_homed = True  # allow normal control
+				self.homing = False   # stop loop
+			else:
+				self.set_direction(1) # direction 1 is towards home
+				self.arm_motor.duty_cycle = self.homing_speed
+				self.homing = True   # continue loop until endstop
+			asyncio.sleep(0.1)
+
 
 	def set_direction(self, direction):
 		self.direction = direction
@@ -42,6 +60,7 @@ class Arm():
 		
 	def stop(self):
 		# logger.debug(f"Stopped arm")
+		self.stopping = True
 		self.arm_motor.duty_cycle = 0
 	
 	async def get_pos(self):
