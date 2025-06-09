@@ -42,7 +42,7 @@ class Arm():
 				self.is_homed = True  # allow normal control
 				self.homing = False   # stop loop
 			else:
-				self.set_direction(1) # direction 1 is towards home
+				lgpio.gpio_write(self.gpio_handler, self.motor_pin, 1) # direction 1 is towards home
 				self.arm_motor.duty_cycle = self.homing_speed
 				self.homing = True   # continue loop until endstop
 			asyncio.sleep(0.1)
@@ -51,8 +51,6 @@ class Arm():
 	def set_direction(self, direction):
 		self.direction = direction
 		lgpio.gpio_write(self.gpio_handler, self.motor_pin, self.direction)
-
-		# GPIO erstellen / setzen
 
 	def move(self):
 		logger.debug(f"Moving arm, direction: {self.direction}, {self.arm_motor.duty_cycle}")
