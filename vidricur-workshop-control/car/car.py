@@ -169,6 +169,7 @@ class Car(metaclass=Singleton):
 	async def start_servo_movers(self):
 		logger.info("STARTING SERVO MOVERS")
 		self.home_task = asyncio.create_task(self.arm.home())
+		# self.encoder_task = asyncio.create_task(self.arm.encoder())
 		self.float_task = asyncio.create_task(self.float.move())
 		self.camera_task = asyncio.create_task(self.camera_servos.move())
 		# camera servos

@@ -10,3 +10,4 @@ adafruit-circuitpython-busdevice
 adafruit-circuitpython-register
 adafruit-circuitpython-motor
 adafruit-circuitpython-ads1x15
+circuitpython-ruhrohrotaryio

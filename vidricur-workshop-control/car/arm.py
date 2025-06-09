@@ -4,6 +4,7 @@ import asyncio
 import lgpio
 import time
 
+
 class Arm():
 	def __init__(self, pca, gpio_handler): #supply gpio_handler!
 		self.pca = pca
@@ -14,15 +15,27 @@ class Arm():
 		self.gpio_handler = gpio_handler
 		self.motor_pin = 16
 		self.endstop_pin = 13
+		self.encoder_pin_A = 8
+		self.encoder_pin_B = 7
 		self.homing = False
 		self.is_homed = False
 		self.stopping = False
 
 		lgpio.gpio_claim_output(self.gpio_handler, self.motor_pin)
 		lgpio.gpio_claim_output(self.gpio_handler, self.endstop_pin, lgpio.SET_PULL_UP)
+		# lgpio.gpio_claim_output(self.gpio_handler, self.encoder_pin_A)
+		# lgpio.gpio_claim_output(self.gpio_handler, self.encoder_pin_B)
 
-		
+		# self.encoder = rotaryio.IncrementalEncoder(self.encoder_pin_A, self.encoder_pin_B)
+		# self.last_position = None
 	
+	# async def encoder(self):
+	# 	while True:
+	# 		position = enc.position
+	# 		if last_position == None or position != last_position:
+	# 			logger.debug(position)
+	# 		last_position = position
+
 
 	def free_pins(self):
 		lgpio.gpio_free(self.gpio_handler, self.motor_pin)
@@ -63,3 +76,5 @@ class Arm():
 	
 	async def get_pos(self):
 		return "None"
+
+	
