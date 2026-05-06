@@ -265,6 +265,91 @@ async def on_cleanup(app):
 app.on_startup.append(on_startup)
 app.on_cleanup.append(on_cleanup)
 
+
+FRAME_RATE = 15
+
+# Camera Stream Handler
+async def stream_camera(request):
+    # Command to stream using libcamera-vid over stdout
+    cmd = [
+        "libcamera-vid", "-t", "0", "--inline", "--codec", "mjpeg",
+        "--framerate", f"{FRAME_RATE}", "-o", "-"
+    ]
+    # Start camera process
+    proc = await asyncio.create_subprocess_exec(
+        *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL
+    )
+
+    # Stream frames in MJPEG format
+    async def frame_generator():
+        buffer = b""
+        try:
+            while True:
+                chunk = await proc.stdout.read(4096)  # Increased chunk size
+                if not chunk:
+                    break
+                buffer += chunk
+                # Look for frame boundaries
+                while b'\xff\xd9' in buffer:  # JPEG EOF marker
+                    frame_end = buffer.index(b'\xff\xd9') + 2
+                    frame = buffer[:frame_end]
+                    buffer = buffer[frame_end:]
+                    yield (b"--frame\r\n"
+                           b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
+        except asyncio.CancelledError:
+            pass
+        finally:
+            proc.kill()
+
+    # Return the response with multipart MJPEG stream
+    return web.Response(body=frame_generator(), content_type="multipart/x-mixed-replace; boundary=frame")
+
+# Register camera stream route
+app.router.add_get('/camera', stream_camera)
+
+
+FRAME_RATE = 15
+
+# Camera Stream Handler
+async def stream_camera1(request):
+    # Command to stream using libcamera-vid over stdout
+    cmd = [
+        "libcamera-vid", "-t", "0", "--inline", "--codec", "mjpeg",
+        "--framerate", f"{FRAME_RATE}","--camera","1", "-o", "-"
+    ]
+    # Start camera process
+    proc = await asyncio.create_subprocess_exec(
+        *cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL
+    )
+
+    # Stream frames in MJPEG format
+    async def frame_generator():
+        buffer = b""
+        try:
+            while True:
+                chunk = await proc.stdout.read(4096)  # Increased chunk size
+                if not chunk:
+                    break
+                buffer += chunk
+                # Look for frame boundaries
+                while b'\xff\xd9' in buffer:  # JPEG EOF marker
+                    frame_end = buffer.index(b'\xff\xd9') + 2
+                    frame = buffer[:frame_end]
+                    buffer = buffer[frame_end:]
+                    yield (b"--frame\r\n"
+                           b"Content-Type: image/jpeg\r\n\r\n" + frame + b"\r\n")
+        except asyncio.CancelledError:
+            pass
+        finally:
+            proc.kill()
+
+    # Return the response with multipart MJPEG stream
+    return web.Response(body=frame_generator(), content_type="multipart/x-mixed-replace; boundary=frame")
+
+# Register camera stream route
+app.router.add_get('/camera1', stream_camera1)
+
+
 # --- Main Execution ---
 if __name__ == "__main__":
 	logger.info("Starting web server on host 0.0.0.0, port 8080")

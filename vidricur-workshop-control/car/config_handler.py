@@ -1,6 +1,6 @@
 import json
 
-CONFIG_PATH = "/home/pi/Vidricur25/vidricur-workshop-control/car/config.json"
+CONFIG_PATH = "/home/pi/project/Vidricur25/vidricur-workshop-control/car/config.json"
 
 def read_config():
     with open(CONFIG_PATH, "r") as file:
